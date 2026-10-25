@@ -154,3 +154,7 @@ Tiêu chuẩn là không có cảnh báo nào. Cảnh báo được sửa chứ 
 
 MIT — xem [LICENSE](../LICENSE). Biểu tượng ở đầu trang: CC BY-SA 4.0 — xem
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+Ứng dụng còn đi kèm các thành phần của Microsoft — Windows App SDK và Windows SDK for .NET — không theo giấy phép MIT
+mà theo điều khoản riêng của Microsoft. Các điều khoản đó nằm trong ứng dụng, ở Cài đặt ▸ Giới thiệu ▸
+**Phần mềm đi kèm**, và việc dùng ứng dụng nghĩa là chấp nhận chúng đối với các thành phần đó.

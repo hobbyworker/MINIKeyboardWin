@@ -159,3 +159,7 @@ Zero avisos é o padrão. Avisos são corrigidos, não desativados.
 
 MIT — veja [LICENSE](../LICENSE). O ícone no topo: CC BY-SA 4.0 — veja
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+O app também traz componentes da Microsoft — o Windows App SDK e o Windows SDK for .NET — que não estão sob a MIT,
+mas sob os termos da própria Microsoft. Esses termos estão no app, em Ajustes ▸ Sobre ▸ **Software Incluído**, e usar o
+app significa aceitá-los para esses componentes.

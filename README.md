@@ -148,3 +148,7 @@ Zero warnings is the bar. Warnings are fixed, not switched off.
 ## License
 
 MIT — see [LICENSE](LICENSE). The icon at the top: CC BY-SA 4.0 — see [LICENSES/CC-BY-SA-4.0.txt](LICENSES/CC-BY-SA-4.0.txt).
+
+The app also carries Microsoft components — the Windows App SDK and the Windows SDK for .NET — that are licensed
+under Microsoft's own terms, not MIT. Their terms are in the app under Settings ▸ About ▸ **Included Software**, and
+using the app means accepting them for those components.

@@ -159,3 +159,7 @@ El objetivo es cero advertencias. Las advertencias se corrigen, no se desactivan
 
 MIT — consulta [LICENSE](../LICENSE). El icono de arriba: CC BY-SA 4.0 — consulta
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+La app también incluye componentes de Microsoft —el Windows App SDK y el Windows SDK for .NET— que no están bajo
+MIT, sino bajo los términos propios de Microsoft. Esos términos están en la app, en Ajustes ▸ Acerca de ▸
+**Software incluido**, y usar la app supone aceptarlos para esos componentes.

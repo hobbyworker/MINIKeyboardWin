@@ -160,3 +160,7 @@ Zero avvisi è il requisito. Gli avvisi si correggono, non si disattivano.
 
 MIT – vedi [LICENSE](../LICENSE). L’icona in alto: CC BY-SA 4.0 – vedi
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+L’app contiene anche componenti Microsoft – il Windows App SDK e il Windows SDK for .NET – che non sono sotto licenza
+MIT ma sotto le condizioni di Microsoft. Le condizioni si trovano nell’app, in Impostazioni ▸ Informazioni ▸
+**Software incluso**, e usare l’app significa accettarle per quei componenti.

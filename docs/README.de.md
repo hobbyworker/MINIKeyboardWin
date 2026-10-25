@@ -164,3 +164,7 @@ Null Warnungen ist der Maßstab. Warnungen werden behoben, nicht abgeschaltet.
 
 MIT – siehe [LICENSE](../LICENSE). Das Symbol ganz oben: CC BY-SA 4.0 – siehe
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+Die App enthält außerdem Komponenten von Microsoft – das Windows App SDK und das Windows SDK for .NET –, die nicht
+unter MIT, sondern unter den eigenen Bedingungen von Microsoft stehen. Diese Bedingungen findest du in der App unter
+Einstellungen ▸ Über ▸ **Enthaltene Software**; wer die App verwendet, akzeptiert sie für diese Komponenten.

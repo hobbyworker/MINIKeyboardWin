@@ -168,3 +168,7 @@ Zéro avertissement : c’est la règle. Les avertissements sont corrigés, pas 
 
 MIT – voir [LICENSE](../LICENSE). L’icône en haut de la page : CC BY-SA 4.0 – voir
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+L’app contient aussi des composants Microsoft – le Windows App SDK et le Windows SDK for .NET – qui ne sont pas sous
+licence MIT mais sous les propres conditions de Microsoft. Ces conditions se trouvent dans l’app, sous Réglages ▸
+À propos ▸ **Logiciels inclus**, et utiliser l’app revient à les accepter pour ces composants.

@@ -160,3 +160,7 @@ Standarnya adalah nol peringatan. Peringatan diperbaiki, bukan dimatikan.
 
 MIT — lihat [LICENSE](../LICENSE). Ikon di bagian atas: CC BY-SA 4.0 — lihat
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+Aplikasi ini juga membawa komponen Microsoft — Windows App SDK dan Windows SDK for .NET — yang tidak berlisensi MIT,
+melainkan tunduk pada ketentuan Microsoft sendiri. Ketentuan tersebut ada di aplikasi, di Pengaturan ▸ Tentang ▸
+**Perangkat Lunak yang Disertakan**, dan menggunakan aplikasi berarti menerima ketentuan itu untuk komponen tersebut.

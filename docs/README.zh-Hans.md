@@ -101,3 +101,5 @@ LICENSES/                       顶部图标的许可证（CC BY-SA 4.0）
 ## 许可证
 
 MIT — 参见 [LICENSE](../LICENSE)。顶部的图标采用 CC BY-SA 4.0 — 参见 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt)。
+
+应用还随附 Microsoft 的组件——Windows App SDK 和 Windows SDK for .NET——它们不采用 MIT，而是适用 Microsoft 自己的许可条款。这些条款位于应用的设置 ▸ 关于 ▸ **随附的软件**中，使用本应用即表示就这些组件接受这些条款。

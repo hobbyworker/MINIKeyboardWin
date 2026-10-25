@@ -163,3 +163,7 @@ Zero ostrzeżeń to standard. Ostrzeżenia się poprawia, a nie wyłącza.
 
 MIT — zobacz [LICENSE](../LICENSE). Ikona na górze: CC BY-SA 4.0 — zobacz
 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt).
+
+Aplikacja zawiera też składniki Microsoft — Windows App SDK i Windows SDK for .NET — objęte nie licencją MIT, lecz
+własnymi warunkami Microsoft. Warunki te są w aplikacji, w Ustawienia ▸ Informacje ▸ **Dołączone oprogramowanie**,
+a korzystanie z aplikacji oznacza ich akceptację w odniesieniu do tych składników.

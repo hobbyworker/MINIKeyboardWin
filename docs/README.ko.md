@@ -136,3 +136,7 @@ LICENSES/                       맨 위 아이콘의 라이선스 (CC BY-SA 4.0)
 ## 라이선스
 
 MIT — [LICENSE](../LICENSE) 를 보세요. 맨 위의 아이콘은 CC BY-SA 4.0 — [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt) 를 보세요.
+
+앱에는 Microsoft 의 구성 요소 — Windows App SDK 와 Windows SDK for .NET — 도 함께 들어 있고, 이것들은 MIT 가 아니라
+Microsoft 의 사용 조건을 따릅니다. 그 조건은 앱의 설정 ▸ 정보 ▸ **함께 들어 있는 소프트웨어** 에 있고, 앱을 쓰면 그 구성
+요소에 대해 그 조건을 받아들이는 것입니다.

@@ -101,3 +101,5 @@ LICENSES/                       冒頭のアイコンのライセンス（CC BY-
 ## ライセンス
 
 MIT — [LICENSE](../LICENSE)を参照してください。冒頭のアイコンはCC BY-SA 4.0 — [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt)を参照してください。
+
+アプリにはMicrosoftのコンポーネント（Windows App SDKとWindows SDK for .NET）も同梱されており、これらはMITではなくMicrosoft独自のライセンス条項に従います。その条項はアプリの設定 ▸ 情報 ▸ **同梱ソフトウェア**にあり、アプリを使うことは、これらのコンポーネントについてその条項に同意することを意味します。

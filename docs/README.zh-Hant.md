@@ -101,3 +101,5 @@ LICENSES/                       最上方圖像的授權條款（CC BY-SA 4.0）
 ## 授權條款
 
 MIT — 請參閱 [LICENSE](../LICENSE)。最上方的圖像採用 CC BY-SA 4.0 — 請參閱 [LICENSES/CC-BY-SA-4.0.txt](../LICENSES/CC-BY-SA-4.0.txt)。
+
+App 還隨附 Microsoft 的元件——Windows App SDK 和 Windows SDK for .NET——它們不採用 MIT，而是適用 Microsoft 自己的授權條款。這些條款位於 App 的設定 ▸ 關於 ▸ **隨附的軟體**中，使用本 App 即表示就這些元件接受這些條款。
