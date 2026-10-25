@@ -21,6 +21,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <!-- The Windows App SDK brings Windows ML's runtime (40 MB, its own license terms); the app uses no ML, so none of it ships. -->
+    <PackageReference Include="Microsoft.Windows.AI.MachineLearning" ExcludeAssets="all" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
   </ItemGroup>
   <ItemGroup>
@@ -29,6 +31,13 @@
     <Content Include="$(BrandIconPng)" Link="Assets\AppIcon.png" CopyToOutputDirectory="PreserveNewest" Condition="'$(BrandIconPng)' != ''" />
     <AssemblyMetadata Include="Website" Value="$(BrandWebsite)" Condition="'$(BrandWebsite)' != ''" />
     <AssemblyMetadata Include="IssueUrl" Value="$(BrandIssueUrl)" Condition="'$(BrandIssueUrl)' != ''" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The licenses of the software the app carries, next to the exe as Licenses\*.txt (Settings ▸ About) — Velopack's
+         only in the direct download, which carries it. -->
+    <Content Include="Licenses\*.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Direct\Licenses\*.txt" Link="Licenses\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest"
+             Condition="'$(Distribution)' == 'Direct'" />
   </ItemGroup>
   <Target Name="RequireBrandName" BeforeTargets="BeforeBuild" Condition="'$(BrandName)' == ''">
     <Error Text="The app has no name: copy Brand.props.example to Brand.props and set BrandName." />

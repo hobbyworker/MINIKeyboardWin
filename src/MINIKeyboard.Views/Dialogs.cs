@@ -335,3 +335,51 @@ internal sealed class LayoutDialog
         return (box, slider);
     }
 }
+
+/// <summary>The licenses of the software the app comes with, each folded under its name, below a line on what they are.</summary>
+internal static class LicensesDialog
+{
+    public static ContentDialog Create(AppInfo info, IReadOnlyList<LicenseNotice> licenses)
+    {
+        var list = new StackPanel { Spacing = 4 };
+        list.Children.Add(new TextBlock
+        {
+            Text = T("%@ comes with the following software. Below is the license text each one ships with.", info.Name),
+            TextWrapping = TextWrapping.Wrap,
+            Margin = new Thickness(0, 0, 0, 8),
+        });
+        foreach (var license in licenses)
+        {
+            var body = new StackPanel { Spacing = 8 };
+            if (Uri.TryCreate(license.Url, UriKind.Absolute, out var uri))
+                body.Children.Add(new HyperlinkButton
+                {
+                    Content = uri.Host + uri.AbsolutePath.TrimEnd('/'),
+                    NavigateUri = uri,
+                    Padding = new Thickness(0),
+                });
+            body.Children.Add(new TextBlock
+            {
+                Text = license.Text,
+                Style = Styles.Get("MonoTextStyle"),
+                FontSize = 12,
+                TextWrapping = TextWrapping.Wrap,
+                IsTextSelectionEnabled = true,
+            });
+            list.Children.Add(new Expander
+            {
+                Header = license.Name,
+                Content = body,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                HorizontalContentAlignment = HorizontalAlignment.Left,
+            });
+        }
+        var dialog = DialogHost.Create();
+        dialog.Title = T("Included Software");
+        dialog.Content = list;
+        dialog.CloseButtonText = T("Done");
+        dialog.DefaultButton = ContentDialogButton.Close;
+        dialog.Resources["ContentDialogMaxWidth"] = 820.0;
+        return dialog;
+    }
+}

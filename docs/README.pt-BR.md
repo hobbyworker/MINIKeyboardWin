@@ -117,7 +117,7 @@ as respostas.
 
 Em ⋯ ▸ **Ajustes** (Ctrl+,), você escolhe o idioma da interface (um dos 13 ou o do Windows) e o modo claro ou
 escuro. O app da página Releases também tem ali **App ▸ Buscar atualizações automaticamente**. Em **Sobre**, no
-final, você vê a versão e os links.
+final, você vê a versão, os links e **Software Incluído** — as licenças do software que acompanha o app.
 
 Em **Ajustes ▸ Contornos para falhas do firmware**, **Evitar a repetição de teclas após mudar a iluminação** vem
 ativado por padrão. O firmware do `1189:8890` repete sem parar o primeiro caractere de uma tecla depois que a

@@ -116,8 +116,8 @@ semua laporan yang ditulis dan semua jawaban yang diterima.
 
 Di ⋯ ▸ **Pengaturan** (Ctrl+,), Anda memilih bahasa antarmuka (salah satu dari 13 bahasa, atau bahasa Windows) serta
 tampilan terang atau gelap. Aplikasi yang diunduh dari Releases juga punya
-**Aplikasi ▸ Periksa pembaruan secara otomatis** di sana. Di **Tentang**, di bagian paling bawah, Anda bisa melihat versi
-dan tautannya.
+**Aplikasi ▸ Periksa pembaruan secara otomatis** di sana. Di **Tentang**, di bagian paling bawah, Anda bisa melihat versi,
+tautan, dan **Perangkat Lunak yang Disertakan** — lisensi perangkat lunak yang disertakan bersama aplikasi.
 
 Di **Pengaturan ▸ Penanganan bug firmware**, **Cegah pengulangan tombol setelah mengubah pencahayaan** aktif secara
 bawaan. Firmware `1189:8890` mengulang karakter pertama sebuah tombol tanpa henti setelah pencahayaannya disimpan

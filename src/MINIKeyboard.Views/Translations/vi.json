@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "Đã có %1$@ %2$@.",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@ đi kèm các phần mềm sau. Bên dưới là nguyên văn giấy phép đi kèm mỗi phần mềm.",
   "%@ is up to date.": "%@ đã là phiên bản mới nhất.",
   "%@ needs to relaunch to apply the change.": "%@ cần khởi chạy lại để áp dụng thay đổi.",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "Phím chức năng",
   "Green": "Lục",
   "Home": "Home",
+  "Included Software": "Phần mềm đi kèm",
   "Insert": "Insert",
   "Interface %lld · %@ · %@ · %@": "Giao diện %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "Giao diện",

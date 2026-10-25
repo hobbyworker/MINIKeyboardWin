@@ -119,7 +119,8 @@ klawiaturą. ⋯ ▸ **Dziennik urządzenia** (Ctrl+Alt+L) pokazuje wszystkie za
 
 ⋯ ▸ **Ustawienia** (Ctrl+,) pozwalają wybrać język interfejsu (jeden z 13 lub język systemu Windows) oraz tryb jasny
 lub ciemny. W aplikacji ze strony Releases jest tam też **Aplikacja ▸ Sprawdzaj uaktualnienia automatycznie**. Na
-dole, w sekcji **Informacje**, są wersja i linki.
+dole, w sekcji **Informacje**, są wersja, linki i **Dołączone oprogramowanie** — licencje oprogramowania dołączonego do
+aplikacji.
 
 Opcja **Zapobiegaj powtarzaniu klawiszy po zmianie podświetlenia** (**Ustawienia ▸ Obejścia błędów oprogramowania
 układowego**) jest domyślnie włączona. Oprogramowanie układowe `1189:8890` po zachowaniu podświetlenia bez końca

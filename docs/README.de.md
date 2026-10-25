@@ -120,7 +120,8 @@ bieten jede Art an (die anderen Report-IDs der `1189:8890`, die ältere Firmware
 
 Unter ⋯ ▸ **Einstellungen** (Ctrl+,) wählst du die Sprache der Oberfläche (eine der 13 oder die von Windows) und Hell
 oder Dunkel. Bei der App aus Releases findest du dort außerdem **App ▸ Automatisch nach Updates suchen**. Unter
-**Über** ganz unten stehen die Version und die Links.
+**Über** ganz unten stehen die Version, die Links und **Enthaltene Software** – die Lizenzen der Software, die mit der
+App ausgeliefert wird.
 
 **Tastenwiederholung nach dem Ändern der Beleuchtung verhindern** (**Einstellungen ▸ Firmware-Fehler umgehen**) ist
 standardmäßig aktiviert. Die Firmware der `1189:8890` wiederholt nach dem Sichern der Beleuchtung das erste Zeichen

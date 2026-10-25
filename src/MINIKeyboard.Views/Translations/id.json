@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "%1$@ %2$@ sudah tersedia.",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@ menyertakan perangkat lunak berikut. Di bawah ini adalah teks asli lisensi yang menyertai masing-masing.",
   "%@ is up to date.": "%@ sudah versi terbaru.",
   "%@ needs to relaunch to apply the change.": "%@ perlu diluncurkan ulang untuk menerapkan perubahan.",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "Tombol Fungsi",
   "Green": "Hijau",
   "Home": "Home",
+  "Included Software": "Perangkat Lunak yang Disertakan",
   "Insert": "Insert",
   "Interface %lld · %@ · %@ · %@": "Antarmuka %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "Antarmuka",

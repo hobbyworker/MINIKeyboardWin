@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "Ya está disponible %1$@ %2$@.",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@ incluye el siguiente software. A continuación aparece el texto original de la licencia con que se distribuye cada uno.",
   "%@ is up to date.": "%@ está actualizado.",
   "%@ needs to relaunch to apply the change.": "%@ debe reiniciarse para aplicar el cambio.",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "Teclas de función",
   "Green": "Verde",
   "Home": "Inicio",
+  "Included Software": "Software incluido",
   "Insert": "Insert",
   "Interface %lld · %@ · %@ · %@": "Interfaz %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "Interfaces",

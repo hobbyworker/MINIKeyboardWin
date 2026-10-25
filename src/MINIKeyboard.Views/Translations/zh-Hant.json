@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "%1$@ %2$@ 已推出。",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@ 隨附以下軟體。以下是各軟體隨附的授權條款原文。",
   "%@ is up to date.": "%@ 已是最新版本。",
   "%@ needs to relaunch to apply the change.": "若要套用變更，需要重新啟動 %@。",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "功能鍵",
   "Green": "綠色",
   "Home": "Home",
+  "Included Software": "隨附的軟體",
   "Insert": "Insert",
   "Interface %lld · %@ · %@ · %@": "介面 %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "介面",

@@ -117,7 +117,7 @@ ese teclado. ⋯ ▸ **Registro del dispositivo** (Ctrl+Alt+L) muestra todos los
 
 En ⋯ ▸ **Ajustes** (Ctrl+,) eliges el idioma de la interfaz (uno de los 13 o el de Windows) y el modo claro u
 oscuro. La app de la página Releases también tiene ahí **App ▸ Buscar actualizaciones automáticamente**. En
-**Acerca de**, al final, ves la versión y los enlaces.
+**Acerca de**, al final, ves la versión, los enlaces y **Software incluido**: las licencias del software que trae la app.
 
 En **Ajustes ▸ Soluciones para fallos del firmware**, **Evitar la repetición de teclas tras cambiar la iluminación**
 está activado de forma predeterminada. El firmware del `1189:8890` repite sin parar el primer carácter de una tecla

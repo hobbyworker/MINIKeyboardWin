@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "%1$@ %2$@ 已发布。",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@ 随附以下软件。下面是各软件随附的许可证原文。",
   "%@ is up to date.": "%@ 已是最新版本。",
   "%@ needs to relaunch to apply the change.": "要应用更改，需要重启 %@。",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "功能键",
   "Green": "绿色",
   "Home": "Home键",
+  "Included Software": "随附的软件",
   "Insert": "Insert键",
   "Interface %lld · %@ · %@ · %@": "接口 %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "接口",

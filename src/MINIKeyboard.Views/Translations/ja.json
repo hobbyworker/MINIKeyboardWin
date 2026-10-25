@@ -1,5 +1,6 @@
 {
   "%1$@ %2$@ is available.": "%1$@ %2$@ が公開されました。",
+  "%@ comes with the following software. Below is the license text each one ships with.": "%@には次のソフトウェアが同梱されています。以下は、それぞれに付属するライセンスの原文です。",
   "%@ is up to date.": "%@ は最新です。",
   "%@ needs to relaunch to apply the change.": "変更を適用するには、%@を再起動する必要があります。",
   "%@ · %@": "%@ · %@",
@@ -78,6 +79,7 @@
   "Function Keys": "ファンクションキー",
   "Green": "グリーン",
   "Home": "Home",
+  "Included Software": "同梱ソフトウェア",
   "Insert": "Insert",
   "Interface %lld · %@ · %@ · %@": "インターフェイス %1$lld · %2$@ · %3$@ · %4$@",
   "Interfaces": "インターフェイス",

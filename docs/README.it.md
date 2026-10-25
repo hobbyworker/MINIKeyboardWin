@@ -117,7 +117,8 @@ ogni risposta.
 
 In ⋯ ▸ **Impostazioni** (Ctrl+,) scegli la lingua dell’interfaccia (una delle 13, oppure quella di Windows) e
 l’aspetto chiaro o scuro. Nell’app scaricata dalla pagina Releases lì trovi anche
-**App ▸ Cerca aggiornamenti automaticamente**. In **Informazioni**, in fondo, trovi la versione e i link.
+**App ▸ Cerca aggiornamenti automaticamente**. In **Informazioni**, in fondo, trovi la versione, i link e **Software incluso**, cioè le licenze del software
+fornito con l’app.
 
 In **Impostazioni ▸ Soluzioni per i bug del firmware**, **Evita la ripetizione dei tasti dopo aver cambiato
 l’illuminazione** è attivo per impostazione predefinita. Dopo il salvataggio dell’illuminazione, il firmware della

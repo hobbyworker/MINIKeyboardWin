@@ -19,7 +19,10 @@ internal sealed class SettingsPage
     private readonly SettingsExpander about;
 
     /// <param name="hasUpdates">A build with updates of its own: the App section, for whether it looks by itself.</param>
-    public SettingsPage(InterfaceSettings settings, AppInfo info, Action<Appearance> applyAppearance, bool hasUpdates)
+    /// <param name="showLicenses">Opens the licenses of the software the app comes with.</param>
+    public SettingsPage(
+        InterfaceSettings settings, AppInfo info, Action<Appearance> applyAppearance, bool hasUpdates,
+        Action showLicenses)
     {
         var choices = settings.Choices;
         var page = new StackPanel
@@ -114,6 +117,12 @@ internal sealed class SettingsPage
             about.Items.Add(website);
         if (Link(T("Report an Issue"), info.IssueUrl) is { } issues)
             about.Items.Add(issues);
+        if (info.Licenses is { Count: > 0 })
+        {
+            var licenses = new SettingsCard { Header = T("Included Software"), IsClickEnabled = true };
+            licenses.Click += (_, _) => showLicenses();
+            about.Items.Add(licenses);
+        }
         page.Children.Add(about);
 
         scroller.Content = page;

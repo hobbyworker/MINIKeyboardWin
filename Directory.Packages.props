@@ -5,6 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <!-- Comes with the Windows App SDK for its machine-learning APIs, which the app doesn't use: left out (40 MB) -->
+    <PackageVersion Include="Microsoft.Windows.AI.MachineLearning" Version="2.1.74" />
     <!-- Settings cards, as the Windows 11 apps (Photos, Notepad, the Store) lay their settings out -->
     <PackageVersion Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />

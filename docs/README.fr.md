@@ -124,7 +124,8 @@ rapport écrit et chaque réponse.
 
 Dans ⋯ ▸ **Réglages** (Ctrl+,), vous choisissez la langue de l’interface (l’une des 13, ou celle de Windows) et
 l’apparence claire ou sombre. L’app issue de la page Releases y propose aussi
-**App ▸ Rechercher les mises à jour automatiquement**. **À propos**, en bas, affiche la version et les liens.
+**App ▸ Rechercher les mises à jour automatiquement**. **À propos**, en bas, affiche la version, les liens et **Logiciels inclus** – les licences des logiciels fournis avec
+l’app.
 
 Dans **Réglages ▸ Contournements des bogues du firmware**, **Empêcher la répétition des touches après un changement
 d’éclairage** est activé par défaut. Après l’enregistrement de l’éclairage, le firmware du `1189:8890` répète sans fin

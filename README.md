@@ -109,8 +109,8 @@ report written and every answer.
 5. **Save** (Ctrl+S) writes what changed. **Read** (Ctrl+R) asks a keyboard that reads back what it holds.
 
 ⋯ ▸ **Settings** (Ctrl+,) picks the interface language (one of the 13, or Windows') and light or dark. The app from
-the Releases page also has **App ▸ Check for updates automatically** there. **About**, at the bottom, has the version
-and the links.
+the Releases page also has **App ▸ Check for updates automatically** there. **About**, at the bottom, has the version,
+the links and **Included Software** — the licenses of what the app comes with.
 
 **Settings ▸ Firmware Workarounds** has **Prevent key repeat after changing the lighting**, on by default. After its
 lighting is saved, the `1189:8890`'s firmware repeats a key's first stroke without end — its maker's software does the

@@ -207,6 +207,7 @@ public sealed partial class MainWindow : Window
         commands["settings"] = new(() => ShowSettings(toAbout: false), () => true);
         commands["preferences"] = commands["settings"];
         commands["about"] = new(() => ShowSettings(toAbout: true), () => true);
+        commands["licenses"] = new(ShowLicenses, () => info.Licenses is { Count: > 0 });
         if (updateBar is { } updates)
             commands["check-updates"] = new(() => _ = updates.CheckAsync(asked: true), () => true);
         commands["back"] = new(HideSettings, () => settingsPage?.Root.Visibility == Visibility.Visible);
@@ -379,7 +380,8 @@ public sealed partial class MainWindow : Window
     {
         if (settingsPage is null)
         {
-            settingsPage = new SettingsPage(Settings, info, ApplyAppearance, hasUpdates: updateBar is not null);
+            settingsPage = new SettingsPage(
+                Settings, info, ApplyAppearance, hasUpdates: updateBar is not null, showLicenses: ShowLicenses);
             Grid.SetRow((FrameworkElement)settingsPage.Root, ContentRow);
             root.Children.Add(settingsPage.Root);
         }
@@ -388,6 +390,12 @@ public sealed partial class MainWindow : Window
         Header.ShowEditing(false);
         settingsPage.Reveal(toAbout);
         UpdateCommands();
+    }
+
+    private void ShowLicenses()
+    {
+        if (info.Licenses is { Count: > 0 } licenses)
+            _ = dialogs.ShowAsync(LicensesDialog.Create(info, licenses));
     }
 
     private void HideSettings()

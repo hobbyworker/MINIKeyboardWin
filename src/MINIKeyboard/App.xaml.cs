@@ -88,7 +88,31 @@ public partial class App : Application
         // "1.0.0+<commit>" names the build; the version is what comes before.
         version = version.Split('+')[0];
         var copyright = Self.GetCustomAttribute<AssemblyCopyrightAttribute>()?.Copyright;
-        return new AppInfo(Name, version, copyright, Metadata("Website"), Metadata("IssueUrl"), Asset("AppIcon.png"));
+        return new AppInfo(
+            Name, version, copyright, Metadata("Website"), Metadata("IssueUrl"), Asset("AppIcon.png"), Licenses());
+    }
+
+    /// <summary>
+    /// The licenses of the software the build carries, from Licenses\*.txt next to the exe — each file's first line is
+    /// the name, the second where it comes from, the rest its license text. By name; none when there's no such folder.
+    /// </summary>
+    private static List<LicenseNotice> Licenses()
+    {
+        var notices = new List<LicenseNotice>();
+        try
+        {
+            foreach (var file in Directory.EnumerateFiles(Path.Combine(AppContext.BaseDirectory, "Licenses"), "*.txt"))
+            {
+                var parts = File.ReadAllText(file).Split('\n', 3);
+                if (parts.Length == 3)
+                    notices.Add(new LicenseNotice(parts[0].Trim(), parts[1].Trim(), parts[2].Trim()));
+            }
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+        }
+        notices.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase));
+        return notices;
     }
 
     /// <summary>The app's own updates: only the direct download has them (the Store updates its build itself).</summary>

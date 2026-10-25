@@ -113,7 +113,8 @@ chương trình cơ sở cũ), và `MINIKEYBOARD_SIMULATED_KEYBOARD` (ví dụ `
 
 Trong ⋯ ▸ **Cài đặt** (Ctrl+,), bạn chọn ngôn ngữ giao diện (một trong 13 ngôn ngữ, hoặc ngôn ngữ của Windows) và chế độ
 sáng hoặc tối. Ứng dụng tải từ trang Releases còn có **Ứng dụng ▸ Tự động kiểm tra bản cập nhật** ở đó. Trong
-**Giới thiệu** ở dưới cùng, bạn xem được phiên bản và các liên kết.
+**Giới thiệu** ở dưới cùng, bạn xem được phiên bản, các liên kết và **Phần mềm đi kèm** — giấy phép của phần mềm đi kèm
+ứng dụng.
 
 Trong **Cài đặt ▸ Khắc phục lỗi firmware**, **Ngăn lặp phím sau khi thay đổi đèn** được bật sẵn. Firmware của
 `1189:8890` lặp lại không ngừng ký tự đầu tiên của phím sau khi lưu đèn (phần mềm của nhà sản xuất cũng vậy), nên ứng
