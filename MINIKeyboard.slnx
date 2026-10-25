@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MINIKeyboard.Domain/MINIKeyboard.Domain.csproj" />
+    <Project Path="src/MINIKeyboard.Data/MINIKeyboard.Data.csproj" />
+    <Project Path="src/MINIKeyboard.Presentation/MINIKeyboard.Presentation.csproj" />
+    <Project Path="src/MINIKeyboard.Views/MINIKeyboard.Views.csproj" />
+    <Project Path="src/MINIKeyboard/MINIKeyboard.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MINIKeyboard.Domain.Tests/MINIKeyboard.Domain.Tests.csproj" />
+    <Project Path="tests/MINIKeyboard.Data.Tests/MINIKeyboard.Data.Tests.csproj" />
+    <Project Path="tests/MINIKeyboard.Presentation.Tests/MINIKeyboard.Presentation.Tests.csproj" />
+  </Folder>
+</Solution>

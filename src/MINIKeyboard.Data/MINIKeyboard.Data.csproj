@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The keyboards as the domain's ports see them: their commands byte for byte, finding them and writing to them
+       through the Windows HID API, the device log, the user's layouts on disk, and simulated keyboards that answer as
+       their firmware would. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MINIKeyboard.Data</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MINIKeyboard.Domain/MINIKeyboard.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The connection's platform-neutral parts are tested without Windows. -->
+    <InternalsVisibleTo Include="MINIKeyboard.Data.Tests" />
+  </ItemGroup>
+</Project>

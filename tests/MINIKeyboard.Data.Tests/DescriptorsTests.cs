@@ -1,0 +1,86 @@
+using MINIKeyboard.Domain;
+
+namespace MINIKeyboard.Data.Tests;
+
+/// <summary>
+/// The descriptors a 1189:8890 reports. Interfaces 0, 2 and 3 are its keyboard, keyboard + consumer and mouse;
+/// interface 1, where settings are written, is HID class with only an interrupt OUT endpoint.
+/// </summary>
+public class DescriptorsTests
+{
+    private static readonly byte[] Configuration =
+    [
+        0x09, 0x02, 0x6D, 0x00, 0x04, 0x01, 0x00, 0xA0, 0x32, 0x09, 0x04, 0x00, 0x00, 0x01, 0x03, 0x01, 0x01, 0x00,
+        0x09, 0x21, 0x11, 0x01, 0x00, 0x01, 0x22, 0x40, 0x00, 0x07, 0x05, 0x81, 0x03, 0x40, 0x00, 0x0A, 0x09, 0x04,
+        0x01, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x09, 0x21, 0x00, 0x01, 0x00, 0x01, 0x22, 0x24, 0x00, 0x07, 0x05,
+        0x02, 0x03, 0x40, 0x00, 0x0A, 0x09, 0x04, 0x02, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x09, 0x21, 0x00, 0x01,
+        0x00, 0x01, 0x22, 0x56, 0x00, 0x07, 0x05, 0x83, 0x03, 0x04, 0x00, 0x0A, 0x09, 0x04, 0x03, 0x00, 0x01, 0x03,
+        0x01, 0x02, 0x00, 0x09, 0x21, 0x10, 0x01, 0x00, 0x01, 0x22, 0x34, 0x00, 0x07, 0x05, 0x82, 0x03, 0x04, 0x00,
+        0x0A,
+    ];
+
+    /// <summary>Interface 1: vendor page 0xFF00, report ID 3 with 64 bytes in and 64 bytes out.</summary>
+    private static readonly byte[] ConfigurationReport =
+    [
+        0x06, 0x00, 0xFF, 0x09, 0x01, 0xA1, 0x01, 0x85, 0x03, 0x09, 0x02, 0x15, 0x00, 0x26, 0x00, 0xFF, 0x75, 0x08,
+        0x95, 0x40, 0x81, 0x06, 0x09, 0x02, 0x15, 0x00, 0x26, 0x00, 0xFF, 0x75, 0x08, 0x95, 0x40, 0x91, 0x06, 0xC0,
+    ];
+
+    private static readonly byte[] Mouse =
+        [0x05, 0x01, 0x09, 0x02, 0xA1, 0x01, 0x75, 0x08, 0x95, 0x04, 0x81, 0x06, 0xC0];
+
+    [Fact]
+    public void ConfigurationInterfaceHasOnlyAnOutEndpoint()
+    {
+        var configurationInterface = Descriptors.Interface(1, Configuration)!;
+        Assert.Equal(new UsbEndpoint(0x02, 64), configurationInterface.OutEndpoint);
+        Assert.Equal((ushort)36, configurationInterface.ReportDescriptorLength);
+    }
+
+    [Fact]
+    public void InputInterfacesHaveNoOutEndpoint()
+    {
+        foreach (byte number in new byte[] { 0, 2, 3 })
+            Assert.Null(Descriptors.Interface(number, Configuration)!.OutEndpoint);
+        Assert.Null(Descriptors.Interface(4, Configuration));
+    }
+
+    [Fact]
+    public void OutputReportIsId3With64Bytes() =>
+        Assert.Equal(new OutputReport(3, 64), Descriptors.FirstOutputReport(ConfigurationReport));
+
+    /// <summary>The configuration interface is told from the others by its vendor-defined page.</summary>
+    [Fact]
+    public void ConfigurationReportIsVendorDefined()
+    {
+        Assert.Equal(0xFF00u, Descriptors.UsagePage(ConfigurationReport));
+        Assert.Equal(0x01u, Descriptors.UsagePage(Mouse));
+        Assert.Null(Descriptors.UsagePage([]));
+    }
+
+    /// <summary>Firmware without report IDs: the output report is unnumbered.</summary>
+    [Fact]
+    public void UnnumberedOutputReportIsId0()
+    {
+        byte[] report = [0x06, 0x00, 0xFF, 0x09, 0x01, 0xA1, 0x01, 0x75, 0x08, 0x95, 0x08, 0x91, 0x02, 0xC0];
+        Assert.Equal(new OutputReport(0, 8), Descriptors.FirstOutputReport(report));
+    }
+
+    [Fact]
+    public void InputOnlyDescriptorHasNoOutputReport() => Assert.Null(Descriptors.FirstOutputReport(Mouse));
+
+    /// <summary>What an interface is for: the usage of each top-level collection.</summary>
+    [Fact]
+    public void TopLevelUsages()
+    {
+        Assert.Equal([new UsagePair(0x01, 0x02)], Descriptors.TopLevelUsages(Mouse));
+        Assert.Equal([new UsagePair(0xFF00, 0x01)], Descriptors.TopLevelUsages(ConfigurationReport));
+        // A keyboard and a consumer collection, one after the other, each with a nested collection.
+        byte[] both =
+        [
+            0x05, 0x01, 0x09, 0x06, 0xA1, 0x01, 0x09, 0x01, 0xA1, 0x00, 0xC0, 0xC0, 0x05, 0x0C, 0x09, 0x01, 0xA1, 0x01,
+            0xC0,
+        ];
+        Assert.Equal([new UsagePair(0x01, 0x06), new UsagePair(0x0C, 0x01)], Descriptors.TopLevelUsages(both));
+    }
+}

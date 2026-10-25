@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The app: the composition root — the one place that knows Domain, Data, Presentation and the windows
+       (MINIKeyboard.Views), and puts them together. Builds on Windows only. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>MINIKeyboard</RootNamespace>
+    <AssemblyName>MINIKeyboard</AssemblyName>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="'$(BrandIcon)' != ''">$(BrandIcon)</ApplicationIcon>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <!-- WinAppSDK's resource tooling: without it the app's own PRI (App.xaml, the windows' XAML) stays out of a publish,
+         and the published app — what an installer carries — fails at launch. -->
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The brand (Brand.props): the icon lands next to the exe as Assets\AppIcon.*, the links in the assembly. -->
+    <Content Include="$(BrandIcon)" Link="Assets\AppIcon.ico" CopyToOutputDirectory="PreserveNewest" Condition="'$(BrandIcon)' != ''" />
+    <Content Include="$(BrandIconPng)" Link="Assets\AppIcon.png" CopyToOutputDirectory="PreserveNewest" Condition="'$(BrandIconPng)' != ''" />
+    <AssemblyMetadata Include="Website" Value="$(BrandWebsite)" Condition="'$(BrandWebsite)' != ''" />
+    <AssemblyMetadata Include="IssueUrl" Value="$(BrandIssueUrl)" Condition="'$(BrandIssueUrl)' != ''" />
+  </ItemGroup>
+  <Target Name="RequireBrandName" BeforeTargets="BeforeBuild" Condition="'$(BrandName)' == ''">
+    <Error Text="The app has no name: copy Brand.props.example to Brand.props and set BrandName." />
+  </Target>
+  <!-- Where the build goes (-p:Distribution=…): Source, the default, is a plain exe with no updates of its own; Direct is
+       the installer that updates itself; Store is the Microsoft Store's package, which the Store updates. Each takes
+       only its own code and files, from the folder of its name (Direct/, Store/), and DISTRIBUTION_DIRECT or
+       DISTRIBUTION_STORE is defined for it. -->
+  <PropertyGroup>
+    <Distribution Condition="'$(Distribution)' == ''">Source</Distribution>
+    <DefineConstants Condition="'$(Distribution)' == 'Direct'">$(DefineConstants);DISTRIBUTION_DIRECT</DefineConstants>
+    <DefineConstants Condition="'$(Distribution)' == 'Store'">$(DefineConstants);DISTRIBUTION_STORE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Direct/**" Condition="'$(Distribution)' != 'Direct'" />
+    <Compile Remove="Store/**" Condition="'$(Distribution)' != 'Store'" />
+  </ItemGroup>
+  <!-- Direct: Velopack installs and updates it and runs first (Direct/Program.cs, in place of WinUI's entry point); the
+       app looks for new versions where the brand says (BrandUpdateUrl). -->
+  <PropertyGroup Condition="'$(Distribution)' == 'Direct'">
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Distribution)' == 'Direct'">
+    <PackageReference Include="Velopack" />
+    <AssemblyMetadata Include="UpdateUrl" Value="$(BrandUpdateUrl)" />
+  </ItemGroup>
+  <Target Name="RequireDistributionValues" BeforeTargets="BeforeBuild">
+    <!-- An empty value given on the command line stays empty (it overrides the default above): that is Source too. -->
+    <Error Condition="'$(Distribution)' != '' and '$(Distribution)' != 'Source' and '$(Distribution)' != 'Direct' and '$(Distribution)' != 'Store'"
+           Text="Distribution is Source (the default), Direct or Store, not '$(Distribution)'." />
+    <Error Condition="'$(Distribution)' == 'Direct' and '$(BrandUpdateUrl)' == ''"
+           Text="A Direct build needs BrandUpdateUrl in Brand.props: where the app looks for new versions." />
+    <Error Condition="'$(Distribution)' == 'Store' and ('$(BrandStoreName)' == '' or '$(BrandStorePublisher)' == '' or '$(BrandStorePublisherName)' == '')"
+           Text="A Store build needs the package identity Partner Center gives the app: BrandStoreName, BrandStorePublisher and BrandStorePublisherName in Brand.props." />
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="../MINIKeyboard.Domain/MINIKeyboard.Domain.csproj" />
+    <ProjectReference Include="../MINIKeyboard.Data/MINIKeyboard.Data.csproj" />
+    <ProjectReference Include="../MINIKeyboard.Presentation/MINIKeyboard.Presentation.csproj" />
+    <ProjectReference Include="../MINIKeyboard.Views/MINIKeyboard.Views.csproj" />
+  </ItemGroup>
+</Project>

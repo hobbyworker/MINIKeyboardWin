@@ -1,0 +1,32 @@
+<Project>
+  <!-- Copy to Brand.props (next to this file) and fill in your own values. Without that file the libraries and tests
+       build as they are; the app stops and asks for a name. -->
+  <PropertyGroup>
+    <!-- Required: the app's name — the window title, About, and the folder in %LOCALAPPDATA% that keeps its settings. -->
+    <BrandName></BrandName>
+
+    <!-- Optional. Left empty, About shows no copyright line and no links. -->
+    <BrandCopyright></BrandCopyright>
+    <BrandWebsite></BrandWebsite>
+    <BrandIssueUrl></BrandIssueUrl>
+
+    <!-- Optional: the app icon, as an .ico (the exe, the taskbar) and a 256 px .png (the title bar, About). Left empty,
+         the app has Windows' generic icon. -->
+    <BrandIcon></BrandIcon>
+    <BrandIconPng></BrandIconPng>
+
+    <!-- Only for a Direct build (-p:Distribution=Direct): where the new versions are — a GitHub repository whose Releases
+         hold Velopack's feed and packages (e.g. https://github.com/you/your-fork), or any other web address or folder
+         that holds them. -->
+    <BrandUpdateUrl></BrandUpdateUrl>
+    <!-- Only for a Direct build's installer: the app ID Velopack installs it under (vpk pack's packId) — the folder in
+         %LOCALAPPDATA%, so better not the name, whose folder keeps the settings. Never changed after a release. -->
+    <BrandAppId></BrandAppId>
+
+    <!-- Only for a Store build (-p:Distribution=Store): the package identity Partner Center gives the app (Product
+         identity: Package/Identity/Name, Package/Identity/Publisher, Package/Properties/PublisherDisplayName). -->
+    <BrandStoreName></BrandStoreName>
+    <BrandStorePublisher></BrandStorePublisher>
+    <BrandStorePublisherName></BrandStorePublisherName>
+  </PropertyGroup>
+</Project>

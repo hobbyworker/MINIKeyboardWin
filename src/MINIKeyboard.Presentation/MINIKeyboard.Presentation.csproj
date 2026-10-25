@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- What the windows show and what the user does in them, in the presentation's own types: the views take these and
+       hand them back, and never see the domain's. No UI framework here. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>MINIKeyboard.Presentation</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MINIKeyboard.Domain/MINIKeyboard.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="MINIKeyboard.Presentation.Tests" />
+  </ItemGroup>
+</Project>

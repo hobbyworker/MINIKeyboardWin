@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The windows (WinUI 3). They see the presentation only — never the domain or the data layer; the compiler keeps
+       it so, since this project doesn't reference them. Builds on Windows only. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <RootNamespace>MINIKeyboard.Views</RootNamespace>
+    <Platforms>x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../MINIKeyboard.Presentation/MINIKeyboard.Presentation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The interface's translations (Strings.cs), one table per language, made from the macOS edition's string catalog -->
+    <None Remove="Translations\*.json" />
+    <EmbeddedResource Include="Translations\*.json" LogicalName="Translations.%(Filename).json" />
+  </ItemGroup>
+</Project>
