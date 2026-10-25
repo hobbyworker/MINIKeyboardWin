@@ -148,7 +148,7 @@ Zero avvisi è il requisito. Gli avvisi si correggono, non si disattivano.
 ## Limiti
 
 - Finora la scrittura è stata provata su una sola tastiera, una `1189:8890` con sei tasti e una manopola, su
-  Windows 11 (ARM64). Non è stata ancora provata su un PC x64 né su Windows 10. Le altre tastiere vengono scritte come
+  Windows 11, sia su PC ARM64 sia su PC x64. Non è stata ancora provata su Windows 10. Le altre tastiere vengono scritte come
   le scrive l’app del loro produttore – i comandi sono quelli dell’app per macOS, byte per byte, e i test li fissano –,
   ma nessuna è stata ancora provata su una tastiera reale.
 - La `1189:8890` e le tastiere che non indicano il proprio tipo non possono riferire le loro impostazioni, quindi si

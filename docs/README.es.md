@@ -147,7 +147,7 @@ El objetivo es cero advertencias. Las advertencias se corrigen, no se desactivan
 ## Limitaciones
 
 - Hasta ahora, la escritura solo se ha probado en un teclado: un `1189:8890` con seis teclas y un botón giratorio,
-  en Windows 11 (ARM64). Todavía no se ha probado en un PC x64 ni en Windows 10. Los demás teclados se escriben tal
+  en Windows 11, tanto en PC ARM64 como x64. Todavía no se ha probado en Windows 10. Los demás teclados se escriben tal
   como lo hace la app de su fabricante —los comandos son los de la app para macOS, byte a byte, y las pruebas los
   fijan—, pero todavía no se ha comprobado ninguno con un teclado real.
 - El `1189:8890` y los teclados que no indican su tipo no pueden informar de su configuración, así que la app solo

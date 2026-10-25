@@ -147,7 +147,7 @@ Standarnya adalah nol peringatan. Peringatan diperbaiki, bukan dimatikan.
 ## Batasan
 
 - Sejauh ini, penulisan baru diperiksa pada satu papan ketik, yaitu `1189:8890` dengan 6 tombol dan 1 kenop, di
-  Windows 11 (ARM64). Penulisan belum diperiksa di PC x64 maupun di Windows 10. Papan ketik lainnya ditulis persis
+  Windows 11, baik pada PC ARM64 maupun x64. Penulisan belum diperiksa di Windows 10. Papan ketik lainnya ditulis persis
   seperti cara aplikasi produsennya menulis — perintahnya sama dengan milik aplikasi macOS sampai ke byte-nya, dan tes
   menjaganya — tetapi belum ada satu pun yang diperiksa langsung pada perangkatnya.
 - `1189:8890` dan papan ketik yang tidak memberi tahu jenisnya tidak melaporkan pengaturan saat ini, jadi yang terlihat

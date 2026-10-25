@@ -151,7 +151,7 @@ Null Warnungen ist der Maßstab. Warnungen werden behoben, nicht abgeschaltet.
 ## Einschränkungen
 
 - Geschrieben wurde bisher nur auf eine einzige Tastatur, eine `1189:8890` mit sechs Tasten und einem Drehknopf, unter
-  Windows 11 (ARM64). Auf einem x64-PC und unter Windows 10 wurde das noch nicht ausprobiert. Die übrigen Tastaturen
+  Windows 11, auf ARM64- wie auf x64-PCs. Unter Windows 10 wurde das noch nicht ausprobiert. Die übrigen Tastaturen
   werden so beschrieben, wie die App ihres Herstellers sie beschreibt – die Befehle sind bis aufs Byte die der
   macOS-App, und Tests halten sie fest –, aber an einer echten Tastatur wurde noch keine davon ausprobiert.
 - Die `1189:8890` und Tastaturen, die ihren Typ nicht angeben, können ihre Einstellungen nicht melden; die App zeigt

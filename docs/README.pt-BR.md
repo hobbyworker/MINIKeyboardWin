@@ -147,7 +147,7 @@ Zero avisos é o padrão. Avisos são corrigidos, não desativados.
 ## Limitações
 
 - Até agora, a gravação só foi testada em um teclado, um `1189:8890` com seis teclas e um botão giratório, no
-  Windows 11 (ARM64). Ainda não foi testada em um PC x64 nem no Windows 10. Os demais teclados são gravados como o
+  Windows 11, tanto em PC ARM64 quanto x64. Ainda não foi testada no Windows 10. Os demais teclados são gravados como o
   app do fabricante os grava — os comandos são os do app para macOS, byte a byte, e os testes os fixam —, mas nenhum
   deles foi testado em um teclado real ainda.
 - O `1189:8890` e os teclados que não informam o tipo não conseguem informar a configuração atual, então o app

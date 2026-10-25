@@ -150,7 +150,7 @@ Zero ostrzeżeń to standard. Ostrzeżenia się poprawia, a nie wyłącza.
 ## Ograniczenia
 
 - Zapis sprawdzono dotąd tylko na jednej klawiaturze — `1189:8890` z sześcioma klawiszami i pokrętłem — w systemie
-  Windows 11 (ARM64). Na komputerze x64 ani w systemie Windows 10 jeszcze go nie sprawdzono. Pozostałe klawiatury są
+  Windows 11, na komputerach ARM64 i x64. W systemie Windows 10 jeszcze go nie sprawdzono. Pozostałe klawiatury są
   zapisywane tak, jak robi to aplikacja ich producenta: polecenia są bajt w bajt takie same jak w aplikacji na macOS
   i pilnują ich testy, ale żadnej z nich nie sprawdzono jeszcze na prawdziwej klawiaturze.
 - Klawiatura `1189:8890` i klawiatury, które nie podają swojego typu, nie przekazują swoich bieżących ustawień, więc

@@ -141,8 +141,8 @@ Tiêu chuẩn là không có cảnh báo nào. Cảnh báo được sửa chứ 
 
 ## Hạn chế
 
-- Đến nay, việc ghi mới được kiểm tra trên một bàn phím là `1189:8890` có 6 phím và 1 núm xoay, trên Windows 11
-  (ARM64). Việc ghi chưa được thử trên PC x64 hay trên Windows 10. Các bàn phím còn lại được ghi đúng theo cách ứng dụng
+- Đến nay, việc ghi mới được kiểm tra trên một bàn phím là `1189:8890` có 6 phím và 1 núm xoay, trên Windows 11,
+  cả trên PC ARM64 lẫn x64. Việc ghi chưa được thử trên Windows 10. Các bàn phím còn lại được ghi đúng theo cách ứng dụng
   của nhà sản xuất ghi — các lệnh giống hệt lệnh của ứng dụng macOS đến từng byte và được kiểm thử giữ đúng, nhưng chưa
   bàn phím nào được thử trên thiết bị thật.
 - `1189:8890` và các bàn phím không cho biết loại không báo lại thiết lập hiện tại, nên chỉ thấy được những gì đã đặt

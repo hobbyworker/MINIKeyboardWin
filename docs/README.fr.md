@@ -155,7 +155,7 @@ Zéro avertissement : c’est la règle. Les avertissements sont corrigés, pas 
 ## Limites
 
 - L’écriture n’a été essayée jusqu’ici que sur un seul clavier, un `1189:8890` à six touches et un bouton rotatif,
-  sous Windows 11 (ARM64). Elle n’a pas encore été essayée sur un PC x64 ni sous Windows 10. Les autres claviers sont
+  sous Windows 11, sur des PC ARM64 comme x64. Elle n’a pas encore été essayée sous Windows 10. Les autres claviers sont
   écrits comme l’app de leur fabricant les écrit – les commandes sont celles de l’app macOS, octet pour octet, et des
   tests les figent –, mais aucun n’a encore été essayé sur un vrai clavier.
 - Le `1189:8890` et les claviers qui n’indiquent pas leur type ne peuvent pas communiquer leurs réglages ; seuls ceux
