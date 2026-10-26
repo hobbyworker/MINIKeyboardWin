@@ -28,6 +28,16 @@ App 提供 13 種語言：英文、韓文、日文、中文（簡體、繁體）
 
 本儲存庫的原始碼採用 MIT 授權條款。發佈的 App 有一部分（名稱、圖像和連結）不包含在此原始碼中。最上方的圖像僅供展示，它不採用 MIT 授權條款，而是採用 CC BY-SA 4.0 授權條款（[`LICENSES/CC-BY-SA-4.0.txt`](../LICENSES/CC-BY-SA-4.0.txt)），以本儲存庫建置的 App 也不包含它。
 
+## macOS、Windows 和 Linux
+
+MINIKeyboard 有三個依相同規則製作的版本——相同的鍵盤、相同的指令、相同的 13 種語言。
+
+| 儲存庫 | GitHub |
+|---|---|
+| **MINIKeyboardApple**<br><img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-0A84FF?logo=apple&logoColor=white"> <img alt="Universal: Apple Silicon + Intel" src="https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-5E5CE6"> <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardApple](https://github.com/hobbyworker/MINIKeyboardApple) |
+| **MINIKeyboardWin**<br><img alt="Windows 10 (2004)+ · 11" src="https://img.shields.io/badge/Windows-10%20(2004)%2B%20·%2011-0078D4?logo=windows&logoColor=white"> <img alt="x64 · ARM64" src="https://img.shields.io/badge/x64%20·%20ARM64-5E5CE6"> <img alt=".NET 10 · WinUI 3" src="https://img.shields.io/badge/.NET%2010-WinUI%203-512BD4?logo=dotnet&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardWin](https://github.com/hobbyworker/MINIKeyboardWin) |
+| **MINIKeyboardLinux**<br><img alt="Linux" src="https://img.shields.io/badge/Linux-GTK%204%20·%20libadwaita-4A86CF?logo=linux&logoColor=white"> <img alt="Flatpak: x86_64 · aarch64" src="https://img.shields.io/badge/Flatpak-x86__64%20·%20aarch64-4A90D9?logo=flatpak&logoColor=white"> <img alt="Rust" src="https://img.shields.io/badge/Rust-2024-B7410E?logo=rust&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardLinux](https://github.com/hobbyworker/MINIKeyboardLinux) |
+
 ## 下載
 
 從 [Releases](https://github.com/hobbyworker/MINIKeyboardWin/releases) 下載適合你電腦的安裝程式並執行：Intel 和 AMD 用 `MINIKeyboard-<版本>-x64-Setup.exe`，ARM 用 `-arm64-Setup.exe`。它不需要系統管理員權限，會安裝到你的使用者資料夾，並在桌面和「開始」功能表中建立捷徑。安裝程式沒有簽署，因此第一次執行時 Windows 會顯示「Windows 已保護您的電腦」：按一下**其他資訊**，然後按一下**仍要執行**。

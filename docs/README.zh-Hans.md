@@ -28,6 +28,16 @@
 
 本仓库的源代码采用 MIT 许可证。所发布应用的一部分（名称、图标和链接）不包含在此源代码中。顶部的图标仅供展示，它不采用 MIT 许可证，而是采用 CC BY-SA 4.0 许可证（[`LICENSES/CC-BY-SA-4.0.txt`](../LICENSES/CC-BY-SA-4.0.txt)），用本仓库构建的应用中也不包含它。
 
+## macOS、Windows 和 Linux
+
+MINIKeyboard 有三个按相同规则制作的版本——相同的键盘、相同的命令、相同的 13 种语言。
+
+| 仓库 | GitHub |
+|---|---|
+| **MINIKeyboardApple**<br><img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B-0A84FF?logo=apple&logoColor=white"> <img alt="Universal: Apple Silicon + Intel" src="https://img.shields.io/badge/Universal-Apple%20Silicon%20%2B%20Intel-5E5CE6"> <img alt="Swift 6" src="https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardApple](https://github.com/hobbyworker/MINIKeyboardApple) |
+| **MINIKeyboardWin**<br><img alt="Windows 10 (2004)+ · 11" src="https://img.shields.io/badge/Windows-10%20(2004)%2B%20·%2011-0078D4?logo=windows&logoColor=white"> <img alt="x64 · ARM64" src="https://img.shields.io/badge/x64%20·%20ARM64-5E5CE6"> <img alt=".NET 10 · WinUI 3" src="https://img.shields.io/badge/.NET%2010-WinUI%203-512BD4?logo=dotnet&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardWin](https://github.com/hobbyworker/MINIKeyboardWin) |
+| **MINIKeyboardLinux**<br><img alt="Linux" src="https://img.shields.io/badge/Linux-GTK%204%20·%20libadwaita-4A86CF?logo=linux&logoColor=white"> <img alt="Flatpak: x86_64 · aarch64" src="https://img.shields.io/badge/Flatpak-x86__64%20·%20aarch64-4A90D9?logo=flatpak&logoColor=white"> <img alt="Rust" src="https://img.shields.io/badge/Rust-2024-B7410E?logo=rust&logoColor=white"> <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"> | [github.com/hobbyworker/MINIKeyboardLinux](https://github.com/hobbyworker/MINIKeyboardLinux) |
+
 ## 下载
 
 从 [Releases](https://github.com/hobbyworker/MINIKeyboardWin/releases) 下载适合你电脑的安装程序并运行：Intel 和 AMD 用 `MINIKeyboard-<版本>-x64-Setup.exe`，ARM 用 `-arm64-Setup.exe`。它无需管理员权限，会安装到你的用户文件夹，并在桌面和“开始”菜单中创建快捷方式。安装程序没有签名，因此首次运行时 Windows 会显示“Windows 已保护你的电脑”：点击**更多信息**，然后点击**仍要运行**。
