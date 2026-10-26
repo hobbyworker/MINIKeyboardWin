@@ -178,6 +178,24 @@ public class EditorTests
         Assert.Null(editor.KeyboardInfo);
     }
 
+    /// <summary>Unplugged, the last keyboard is still drawn, but its shape can't be changed — and its sheet goes.</summary>
+    [Fact]
+    public async Task UnpluggedTheShapeCantChange()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PlugAsync(K8890());
+        var editor = fixture.Editor;
+        Assert.True(editor.HasLayout);
+        Assert.True(editor.IsChoosingLayout);
+        await fixture.SendAsync(ConnectionState.Searching);
+        Assert.NotNull(editor.Drawing);
+        Assert.False(editor.HasLayout);
+        Assert.False(editor.IsChoosingLayout);
+        Assert.Null(editor.LayoutSheet);
+        editor.SetChoosingLayout(true);
+        Assert.False(editor.IsChoosingLayout);
+    }
+
     /// <summary>A 884x keyboard that doesn't answer picks one of the app's layouts; rotating turns the drawing.</summary>
     [Fact]
     public async Task TheLayoutSheet()

@@ -196,7 +196,9 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
 
     public bool IsChoosingLayout => state.IsChoosingLayout;
 
-    public void SetChoosingLayout(bool choosing) => Update(state => state.IsChoosingLayout = choosing);
+    /// <summary>Opens or closes the layout sheet — it opens only with a keyboard to choose for.</summary>
+    public void SetChoosingLayout(bool choosing) =>
+        Update(state => state.IsChoosingLayout = choosing && state.ResolvedLayout is not null && state.Keyboard is not null);
 
     public EditorTab Tab => state.Tab;
 
@@ -232,6 +234,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             state.Identification = null;
             state.Selection = null;
             state.Held = Modifiers.None;
+            // A sheet for the keyboard that went goes with it; the next one asks again if it needs to.
+            state.IsChoosingLayout = false;
             if (state.Keyboard is not { } keyboard)
                 return false;
             if (keyboard.Usb != previous?.Usb)
@@ -385,8 +389,11 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             ApplyLayout(shape.Layout(), Rotations.FromQuarterTurns(quarterTurns));
     }
 
-    /// <summary>Whether there is a layout to turn or change.</summary>
-    public bool HasLayout => state.ResolvedLayout is not null;
+    /// <summary>
+    /// Whether there is a layout to turn or change — the connected keyboard's. With none connected the last one is
+    /// still drawn, dimmed, but there is nothing to change it on.
+    /// </summary>
+    public bool HasLayout => state.ResolvedLayout is not null && state.Keyboard is not null;
 
     public void Rotate()
     {
