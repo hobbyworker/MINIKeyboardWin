@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace MINIKeyboard.Domain;
 
 // What the outer layers provide: the keyboard, its connection, the device log and the user's choices.
@@ -14,6 +16,22 @@ public interface IKeyboardConnectionRepository
 
     /// <summary>Looks for the keyboard again — after another app let go of it.</summary>
     void Retry();
+
+    /// <summary>
+    /// The supported keyboards plugged in and the one the app opens, then every change. A connection with one keyboard
+    /// only — a simulated one — has no others to choose from.
+    /// </summary>
+    async IAsyncEnumerable<AttachedKeyboards> AttachedKeyboardUpdates(
+        [EnumeratorCancellation] CancellationToken cancellation = default)
+    {
+        await Task.CompletedTask;
+        yield return AttachedKeyboards.None;
+    }
+
+    /// <summary>Opens another of the keyboards plugged in, in place of the one open now, and keeps it for next time.</summary>
+    void SelectKeyboard(string id)
+    {
+    }
 }
 
 /// <summary>Talking to the open keyboard.</summary>

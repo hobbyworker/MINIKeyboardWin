@@ -1,4 +1,5 @@
 using System.Runtime.Versioning;
+using MINIKeyboard.Data.Connection;
 using MINIKeyboard.Domain;
 
 namespace MINIKeyboard.Data;
@@ -13,17 +14,25 @@ public sealed class KeyboardSourceSwitch :
     IKeyboardConnectionRepository, IKeyboardSourceRepository, IChannelProvider, IDisposable
 {
     private readonly DeviceLogStore log;
+    private readonly string selectedKeyboard;
     private readonly Dictionary<SimulatedModel, SimulatedKeyboard> simulated = [];
     private readonly Broadcaster<ConnectionState> state = new(ConnectionState.Searching);
+
+    /// <summary>The keyboards on USB to choose from — none while a simulated keyboard is in use.</summary>
+    private readonly Broadcaster<AttachedKeyboards> attached = new(AttachedKeyboards.None);
     private KeyboardSource source = KeyboardSource.Hardware;
     private HardwareConnection? hardware;
 
     /// <summary>Whether the hardware connection's states are passed on; read on the connection's thread.</summary>
     private volatile bool followingHardware;
 
-    public KeyboardSourceSwitch(DeviceLogStore log, KeyboardSource initial)
+    /// <param name="selectedKeyboard">
+    /// Where the keyboard on USB chosen last time is kept (<see cref="HardwareConnection.Start"/>).
+    /// </param>
+    public KeyboardSourceSwitch(DeviceLogStore log, KeyboardSource initial, string selectedKeyboard)
     {
         this.log = log;
+        this.selectedKeyboard = selectedKeyboard;
         Follow(initial);
         source = initial;
     }
@@ -37,6 +46,15 @@ public sealed class KeyboardSourceSwitch :
     {
         if (source is KeyboardSource.HardwareSource)
             hardware?.Retry();
+    }
+
+    public IAsyncEnumerable<AttachedKeyboards> AttachedKeyboardUpdates(CancellationToken cancellation = default) =>
+        attached.Subscribe(cancellation);
+
+    public void SelectKeyboard(string id)
+    {
+        if (source is KeyboardSource.HardwareSource)
+            hardware?.SelectKeyboard(id);
     }
 
     public void Select(KeyboardSource source)
@@ -63,16 +81,18 @@ public sealed class KeyboardSourceSwitch :
         {
             case KeyboardSource.Simulated { Model: var model }:
                 followingHardware = false;
+                attached.Set(AttachedKeyboards.None);
                 state.Set(new ConnectionState.Connected(SimulatedFor(model).Keyboard()));
                 break;
             default:
                 if (hardware is null)
                 {
-                    hardware = HardwareConnection.Start(log);
-                    hardware.MirrorInto(state, () => followingHardware);
+                    hardware = HardwareConnection.Start(log, selectedKeyboard);
+                    hardware.MirrorInto(new Mirror(state, attached, () => followingHardware));
                 }
                 followingHardware = true;
                 state.Set(hardware.State);
+                attached.Set(hardware.Attached);
                 break;
         }
     }

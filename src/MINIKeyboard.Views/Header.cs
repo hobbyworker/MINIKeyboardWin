@@ -12,8 +12,8 @@ using static MINIKeyboard.Views.Strings;
 namespace MINIKeyboard.Views;
 
 /// <summary>
-/// The window's top, as Windows 11 apps lay it out: the title bar has the keyboard's state beside the app's icon and the
-/// menu at its end (Settings names the app there instead); the command row below it has the layers in the middle and
+/// The window's top, as Windows 11 apps lay it out: the title bar has the keyboard's state — with several plugged in, a
+/// menu to choose which one is open — beside the app's icon and the menu at its end (Settings names the app there instead); the command row below it has the layers in the middle and
 /// reading and saving on the right.
 /// </summary>
 /// <remarks>
@@ -53,6 +53,29 @@ internal sealed class Header
         texts.Children.Add(title);
         texts.Children.Add(detail);
 
+        Keyboards = new Button
+        {
+            Content = Ui.Icon(Glyphs.ChevronDown, 12),
+            Style = Styles.Get("SubtleButtonStyle"),
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        Ui.Tooltip(Keyboards, T("Choose a Keyboard"));
+        var choices = new MenuFlyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
+        choices.Opening += (_, _) =>
+        {
+            choices.Items.Clear();
+            foreach (var choice in editor.KeyboardChoices)
+            {
+                var item = new RadioMenuFlyoutItem
+                {
+                    Text = choice.Title, GroupName = "keyboards", IsChecked = choice.IsSelected,
+                };
+                item.Click += (_, _) => editor.SelectKeyboard(choice.Id);
+                choices.Items.Add(item);
+            }
+        };
+        Keyboards.Flyout = choices;
+
         Info = new Button
         {
             Content = Ui.Icon(Glyphs.Info, 16),
@@ -79,6 +102,7 @@ internal sealed class Header
 
         status.Children.Add(dot);
         status.Children.Add(texts);
+        status.Children.Add(Keyboards);
         status.Children.Add(Info);
         status.Children.Add(identify);
         status.Children.Add(retry);
@@ -141,7 +165,7 @@ internal sealed class Header
         Grid.SetColumn(More, 6);
         Bar.Children.Add(More);
         dims = [icon, status, More];
-        clickable = [Back, Info, identify, retry, More];
+        clickable = [Back, Keyboards, Info, identify, retry, More];
 
         // The command row: the layers in the middle, reading and saving on the right.
         var actions = new StackPanel
@@ -173,6 +197,9 @@ internal sealed class Header
 
     /// <summary>The row under the title bar: the layers, and reading and saving.</summary>
     public FrameworkElement Commands { get; }
+
+    /// <summary>With several keyboards plugged in, chooses which one is open.</summary>
+    public Button Keyboards { get; }
 
     /// <summary>Opens what is known about the keyboard.</summary>
     public Button Info { get; }
@@ -292,6 +319,7 @@ internal sealed class Header
             _ => (T("Not Connected"), T("Connect the keyboard via USB.")),
         };
         var connectedNow = status is ConnectionStatus.Connected;
+        Show(Keyboards, editor.KeyboardChoices.Count > 0);
         Show(Info, connectedNow && editor.KeyboardInfo is not null);
         Show(identify, status is ConnectionStatus.Connected { IsIdentified: false } && activity is null);
         Show(retry, status is ConnectionStatus.NeedsPermission or ConnectionStatus.OpenFailed);

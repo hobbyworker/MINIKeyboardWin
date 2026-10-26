@@ -3,17 +3,27 @@ using MINIKeyboard.Domain;
 namespace MINIKeyboard.Data.Connection;
 
 /// <summary>
-/// The connection's work, done on its thread: looks at the keyboards plugged in, opens the first one's configuration
-/// collection, and lets go when it is unplugged. A keyboard that didn't open is left alone — and its failure stays on
-/// screen — until it is plugged in again or the user retries.
+/// The connection's work, done on its thread: looks at the keyboards plugged in, opens the chosen one's configuration
+/// collection (<see cref="KeyboardChoice"/>), and lets go when it is unplugged. A keyboard that didn't open is left
+/// alone — and its failure stays on screen — until it is plugged in again or the user retries. The others are left
+/// alone too, so another app can have them.
 /// </summary>
-internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broadcaster<ConnectionState> state)
+/// <param name="selectedKeyboard">Where the keyboard chosen last time is kept; null keeps nothing.</param>
+internal sealed class ConnectionWatcher(
+    DeviceLogStore log, IHidSystem hid, Broadcaster<ConnectionState> state, Broadcaster<AttachedKeyboards> attached,
+    string? selectedKeyboard)
 {
     private readonly Lock gate = new();
-    private readonly List<(Broadcaster<ConnectionState> Target, Func<bool> Active)> mirrors = [];
+    private readonly List<Mirror> mirrors = [];
     private readonly HashSet<string> failed = new(StringComparer.Ordinal);
     private IoChannel? open;
     private string? connected;
+
+    /// <summary>The keyboard <see cref="connected"/> is on.</summary>
+    private string? connectedKeyboard;
+
+    /// <summary>The one the user chose this session; null once it is unplugged — the app doesn't go back to it by itself.</summary>
+    private string? chosen;
 
     /// <summary>The open channel, from any thread.</summary>
     public IReportChannel? OpenChannel()
@@ -22,11 +32,11 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
             return open;
     }
 
-    /// <summary>Another broadcaster takes the same states while <paramref name="active"/> says so.</summary>
-    public void MirrorInto(Broadcaster<ConnectionState> target, Func<bool> active)
+    /// <summary>Other broadcasters take the same values while <see cref="Mirror.Active"/> says so.</summary>
+    public void MirrorInto(Mirror mirror)
     {
         lock (gate)
-            mirrors.Add((target, active));
+            mirrors.Add(mirror);
     }
 
     public void Retry()
@@ -37,19 +47,44 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
         Refresh();
     }
 
+    public void Select(string id)
+    {
+        if (attached.Value.Keyboards.FirstOrDefault(keyboard => keyboard.Id == id) is not { } keyboard)
+            return;
+        chosen = id;
+        Remember(keyboard);
+        if (connectedKeyboard == id)
+            return;
+        CloseChannel();
+        failed.Clear();
+        SetState(ConnectionState.Searching);
+        Refresh();
+    }
+
     public void Refresh()
     {
         var candidates = HidCollections.Candidates(hid.Collections());
         var present = candidates.Select(candidate => candidate.Entry).ToHashSet(StringComparer.Ordinal);
         failed.IntersectWith(present);
+        var keyboards = KeyboardChoice.Ordered(candidates.Select(candidate => candidate.Keyboard));
+        if (chosen is not null && keyboards.All(keyboard => keyboard.Id != chosen))
+            chosen = null;
 
         if (connected is not null)
         {
             if (present.Contains(connected))
+            {
+                Publish(keyboards, connectedKeyboard);
                 return;
-            Disconnect();
+            }
+            CloseChannel();
+            SetState(ConnectionState.Searching);
         }
-        if (candidates.FirstOrDefault(candidate => !failed.Contains(candidate.Entry)) is not { } usable)
+        HidCandidate? Usable(AttachedKeyboard keyboard) => candidates.FirstOrDefault(
+            candidate => candidate.Keyboard.Id == keyboard.Id && !failed.Contains(candidate.Entry));
+        var target = KeyboardChoice.Target(keyboards, chosen, Remembered(), keyboard => Usable(keyboard) is not null);
+        Publish(keyboards, target?.Id);
+        if (target is null || Usable(target) is not { } usable)
         {
             // A failure stays on screen while that keyboard is still plugged in.
             var failing = state.Value is ConnectionState.NeedsPermission or ConnectionState.OpenFailed;
@@ -60,7 +95,8 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
         Open(usable);
     }
 
-    public void Disconnect()
+    /// <summary>Lets go of the keyboard.</summary>
+    public void CloseChannel()
     {
         IoChannel? channel;
         lock (gate)
@@ -69,11 +105,8 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
             open = null;
         }
         channel?.Close();
-        if (connected is not null)
-        {
-            connected = null;
-            SetState(ConnectionState.Searching);
-        }
+        connected = null;
+        connectedKeyboard = null;
     }
 
     private void Open(HidCandidate candidate)
@@ -97,7 +130,38 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
         lock (gate)
             open = IoChannel.Start(port, framing);
         connected = candidate.Entry;
+        connectedKeyboard = candidate.Keyboard.Id;
         SetState(new ConnectionState.Connected(keyboard));
+    }
+
+    private string? Remembered()
+    {
+        if (selectedKeyboard is null)
+            return null;
+        try
+        {
+            return File.ReadAllText(selectedKeyboard).Trim();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>A write that fails is dropped — the first keyboard opens next time.</summary>
+    private void Remember(AttachedKeyboard keyboard)
+    {
+        if (selectedKeyboard is null)
+            return;
+        try
+        {
+            if (Path.GetDirectoryName(selectedKeyboard) is { Length: > 0 } directory)
+                Directory.CreateDirectory(directory);
+            File.WriteAllText(selectedKeyboard, KeyboardChoice.Key(keyboard));
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 
     private void SetState(ConnectionState next)
@@ -116,11 +180,29 @@ internal sealed class ConnectionWatcher(DeviceLogStore log, IHidSystem hid, Broa
         state.Set(next);
         lock (gate)
         {
-            foreach (var (target, active) in mirrors)
+            foreach (var mirror in mirrors)
             {
-                if (active())
-                    target.Set(next);
+                if (mirror.Active())
+                    mirror.State.Set(next);
+            }
+        }
+    }
+
+    private void Publish(IReadOnlyList<AttachedKeyboard> keyboards, string? selected)
+    {
+        var next = new AttachedKeyboards([.. keyboards], selected);
+        attached.Set(next);
+        lock (gate)
+        {
+            foreach (var mirror in mirrors)
+            {
+                if (mirror.Active())
+                    mirror.Attached.Set(next);
             }
         }
     }
 }
+
+/// <summary>Other broadcasters that take the connection's values while <paramref name="Active"/> says so.</summary>
+internal sealed record Mirror(
+    Broadcaster<ConnectionState> State, Broadcaster<AttachedKeyboards> Attached, Func<bool> Active);

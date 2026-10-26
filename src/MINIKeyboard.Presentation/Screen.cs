@@ -34,6 +34,28 @@ public sealed partial class EditorModel
     public KeyboardInfo? KeyboardInfo =>
         state.Keyboard is { } keyboard ? KeyboardInfo.Of(keyboard, state.Identification) : null;
 
+    /// <summary>The keyboards plugged in, to choose which is open — only when there is more than one.</summary>
+    public IReadOnlyList<KeyboardChoice> KeyboardChoices
+    {
+        get
+        {
+            var attached = state.Attached;
+            if (attached.Keyboards.Count < 2)
+                return [];
+            var seen = new Dictionary<UsbIdentity, int>();
+            return
+            [
+                .. attached.Keyboards.Select(keyboard =>
+                {
+                    var sameId = attached.Keyboards.Count(other => other.Usb == keyboard.Usb);
+                    var number = seen[keyboard.Usb] = seen.GetValueOrDefault(keyboard.Usb) + 1;
+                    var title = sameId > 1 ? $"{keyboard.Usb} ({number})" : keyboard.Usb.ToString();
+                    return new KeyboardChoice(keyboard.Id, title, keyboard.Id == attached.Selected);
+                }),
+            ];
+        }
+    }
+
     // The keyboard
 
     public KeyboardDrawing? Drawing

@@ -196,6 +196,32 @@ public class EditorTests
         Assert.False(editor.IsChoosingLayout);
     }
 
+    /// <summary>
+    /// With several keyboards plugged in, each is a choice — those with the same USB ID numbered — and choosing one asks
+    /// the connection to open it. One keyboard alone is no choice.
+    /// </summary>
+    [Fact]
+    public async Task SeveralKeyboardsAreChoices()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var editor = fixture.Editor;
+        var first = new AttachedKeyboard("a", K8890().Usb, "1");
+        var second = new AttachedKeyboard("b", K8890().Usb, "2");
+        var third = new AttachedKeyboard("c", K8840().Usb, "3");
+        await fixture.SendAsync(new AttachedKeyboards([first], "a"));
+        Assert.Empty(editor.KeyboardChoices);
+        await fixture.SendAsync(new AttachedKeyboards([first, second, third], "b"));
+        Assert.Equal(
+            [
+                new KeyboardChoice("a", "1189:8890 (1)", false),
+                new KeyboardChoice("b", "1189:8890 (2)", true),
+                new KeyboardChoice("c", "1189:8840", false),
+            ],
+            editor.KeyboardChoices);
+        editor.SelectKeyboard("c");
+        Assert.Equal(["c"], fixture.Connection.Selected);
+    }
+
     /// <summary>A 884x keyboard that doesn't answer picks one of the app's layouts; rotating turns the drawing.</summary>
     [Fact]
     public async Task TheLayoutSheet()

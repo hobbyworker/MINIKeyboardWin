@@ -411,6 +411,10 @@ public abstract record SimulatorKind
     public sealed record Unidentified(string Usb) : SimulatorKind;
 }
 
+/// <summary>One of the keyboards plugged in, to choose which the app opens.</summary>
+/// <param name="Title">Its USB ID, numbered by port when several have the same one.</param>
+public sealed record KeyboardChoice(string Id, string Title, bool IsSelected);
+
 /// <summary>A keyboard the simulator can play.</summary>
 public sealed record SimulatorChoice(string Id, SimulatorGroup Group, SimulatorKind Kind)
 {

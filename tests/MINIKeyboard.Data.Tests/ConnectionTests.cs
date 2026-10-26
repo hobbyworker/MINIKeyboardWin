@@ -216,9 +216,98 @@ public class ConnectionTests
     private static (ConnectionWatcher Watcher, Broadcaster<ConnectionState> State, DeviceLogStore Log) Watcher(
         FakeHid hid)
     {
+        var (watcher, state, _, log) = Watching(hid, null);
+        return (watcher, state, log);
+    }
+
+    private static (ConnectionWatcher Watcher, Broadcaster<ConnectionState> State,
+        Broadcaster<AttachedKeyboards> Attached, DeviceLogStore Log) Watching(FakeHid hid, string? selectedKeyboard)
+    {
         var state = new Broadcaster<ConnectionState>(ConnectionState.Searching);
+        var attached = new Broadcaster<AttachedKeyboards>(AttachedKeyboards.None);
         var log = new DeviceLogStore();
-        return (new ConnectionWatcher(log, hid, state), state, log);
+        return (new ConnectionWatcher(log, hid, state, attached, selectedKeyboard), state, attached, log);
+    }
+
+    private static string DeviceKey(UsbIdentity usb, string device) =>
+        $@"USB\VID_{usb.VendorId:X4}&PID_{usb.ProductId:X4}\{device}";
+
+    // Several keyboards plugged in.
+
+    /// <summary>One entry per keyboard, in the order their places to write came; the same USB ID by port.</summary>
+    [Fact]
+    public void KeyboardsInOrderOfFamilyThenPort()
+    {
+        AttachedKeyboard Keyboard(string id, UsbIdentity usb, string location) => new(id, usb, location);
+        var a = Keyboard("a", KeyboardFamilies.K8890Usb, "2");
+        var b = Keyboard("b", KeyboardFamilies.K8890Usb, "1");
+        var c = Keyboard("c", new(0x1189, 0x8840), "0");
+        Assert.Equal([b, a, c], KeyboardChoice.Ordered([a, b, c, c]));
+    }
+
+    /// <summary>
+    /// The one chosen this session; else the one chosen last time, by its USB ID and port; else the first that opens —
+    /// and with none, the first, to show why it can't.
+    /// </summary>
+    [Fact]
+    public void WhichKeyboardOpens()
+    {
+        AttachedKeyboard[] keyboards =
+        [
+            new("a", KeyboardFamilies.K8890Usb, "1"),
+            new("b", new(0x1189, 0x8840), "2"),
+        ];
+        Assert.Equal(keyboards[1], KeyboardChoice.Target(keyboards, "b", "1189:8890@1", _ => true));
+        Assert.Equal("1189:8840@2", KeyboardChoice.Key(keyboards[1]));
+        Assert.Equal(keyboards[1], KeyboardChoice.Target(keyboards, null, "1189:8840@2", _ => true));
+        Assert.Equal(keyboards[1], KeyboardChoice.Target(keyboards, "x", "1189:8890@9", keyboard => keyboard.Id == "b"));
+        Assert.Equal(keyboards[0], KeyboardChoice.Target(keyboards, null, null, _ => false));
+        Assert.Null(KeyboardChoice.Target([], null, null, _ => true));
+    }
+
+    /// <summary>
+    /// With several plugged in, one is open — the first — and choosing another opens it and keeps it for next time.
+    /// Unplugged, the first opens again; plugged in again, the app stays where it is.
+    /// </summary>
+    [Fact]
+    public void OneOfSeveralKeyboardsIsOpen()
+    {
+        var remembered = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"minikb-{Guid.NewGuid():N}", "selected");
+        var hid = new FakeHid();
+        hid.Plugged.AddRange([.. K8850(), .. K8890("6&b"), .. K8890("6&a")]);
+        var (watcher, state, attached, _) = Watching(hid, remembered);
+        watcher.Refresh();
+        var a = DeviceKey(KeyboardFamilies.K8890Usb, "6&a");
+        var b = DeviceKey(KeyboardFamilies.K8890Usb, "6&b");
+        var k8850 = DeviceKey(new(0x514C, 0x8850), "6&8850");
+        Assert.Equal([a, b, k8850], attached.Value.Keyboards.Select(keyboard => keyboard.Id));
+        Assert.Equal(a, attached.Value.Selected);
+        Assert.Contains("6&a", Assert.Single(hid.Opened).Collection.Path);
+
+        watcher.Select(k8850);
+        Assert.Equal(KeyboardFamily.K884x, Assert.IsType<ConnectionState.Connected>(state.Value).Device.Family);
+        Assert.Equal(k8850, attached.Value.Selected);
+        Assert.Equal($"514C:8850@{k8850}", File.ReadAllText(remembered));
+        Assert.Equal(2, hid.Opened.Count);
+
+        // The same again opens nothing.
+        watcher.Select(k8850);
+        Assert.Equal(2, hid.Opened.Count);
+
+        hid.Plugged.RemoveAll(collection => collection.Usb != KeyboardFamilies.K8890Usb);
+        watcher.Refresh();
+        Assert.Equal(a, attached.Value.Selected);
+        Assert.Contains("6&a", hid.Opened[^1].Collection.Path);
+        hid.Plugged.AddRange(K8850());
+        watcher.Refresh();
+        Assert.Equal(a, attached.Value.Selected);
+        Assert.Equal(3, hid.Opened.Count);
+
+        // Next time, the one chosen last opens first.
+        var (next, _, nextAttached, _) = Watching(hid, remembered);
+        next.Refresh();
+        Assert.Equal(k8850, nextAttached.Value.Selected);
+        Directory.Delete(System.IO.Path.GetDirectoryName(remembered)!, recursive: true);
     }
 
     [Fact]

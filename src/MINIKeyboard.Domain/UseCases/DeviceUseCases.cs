@@ -13,6 +13,19 @@ public sealed class RetryConnectionUseCase(IKeyboardConnectionRepository reposit
     public void Execute() => repository.Retry();
 }
 
+/// <summary>Follows the supported keyboards plugged in and the one the app opens.</summary>
+public sealed class ObserveAttachedKeyboardsUseCase(IKeyboardConnectionRepository repository)
+{
+    public IAsyncEnumerable<AttachedKeyboards> Execute(CancellationToken cancellation = default) =>
+        repository.AttachedKeyboardUpdates(cancellation);
+}
+
+/// <summary>Opens another of the keyboards plugged in.</summary>
+public sealed class SelectKeyboardUseCase(IKeyboardConnectionRepository repository)
+{
+    public void Execute(string id) => repository.SelectKeyboard(id);
+}
+
 /// <summary>
 /// Settles the commands a newly connected keyboard takes. The 8890's report ID is in its descriptor, so it is asked
 /// nothing; a 884x keyboard is asked who it is, up to <c>attempts</c> times, and one that never answers is written in

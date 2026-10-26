@@ -23,6 +23,22 @@ public sealed record ConnectedKeyboard(
     int ReportLength,
     DeviceDetails? Details);
 
+/// <summary>A supported keyboard plugged in — one the app can open. Several can be plugged in; the app opens one at a time.</summary>
+/// <param name="Id">Which keyboard it is while it stays plugged in.</param>
+/// <param name="Location">
+/// Where it is plugged in. These keyboards carry no serial number, so this is what tells two with the same USB ID apart,
+/// and what finds the one chosen last time again — on Windows, the USB device's instance ID, which Windows makes from
+/// the port.
+/// </param>
+public sealed record AttachedKeyboard(string Id, UsbIdentity Usb, string Location);
+
+/// <summary>The supported keyboards plugged in, in the order the app looks at them, and the one it opens.</summary>
+/// <param name="Selected">The one open, being opened or that failed to open; null when none is plugged in.</param>
+public sealed record AttachedKeyboards(EquatableArray<AttachedKeyboard> Keyboards, string? Selected)
+{
+    public static AttachedKeyboards None { get; } = new([], null);
+}
+
 public abstract record ConnectionState
 {
     private ConnectionState() { }

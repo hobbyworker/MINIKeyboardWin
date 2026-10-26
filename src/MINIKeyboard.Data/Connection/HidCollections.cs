@@ -46,6 +46,9 @@ internal sealed record HidCandidate(
 {
     /// <summary>What stays the same while the keyboard is plugged in.</summary>
     public string Entry => Collection.Path;
+
+    /// <summary>The keyboard it is on: its USB device, which Windows names after the port it is plugged into.</summary>
+    public AttachedKeyboard Keyboard => new(Collection.DeviceKey, Collection.Usb, Collection.DeviceKey);
 }
 
 /// <summary>

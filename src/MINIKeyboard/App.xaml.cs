@@ -42,7 +42,7 @@ public partial class App : Application
         var profiles = new FileLayoutProfiles(Path.Combine(data, "layouts.json"));
         // Settings ▸ Keyboard, asked at every write.
         var (keyboards, device, source, disposable) =
-            Connect(log, () => settings.Choices.PreventLightingKeyRepeat);
+            Connect(log, Path.Combine(data, "selected-keyboard"), () => settings.Choices.PreventLightingKeyRepeat);
         connection = disposable;
         var editor = new EditorModel(new EditorDependencies
         {
@@ -54,6 +54,8 @@ public partial class App : Application
             ReadKeyboard = new ReadKeyboardUseCase(device),
             SaveKeyboard = new SaveKeyboardUseCase(device),
             KeyboardSource = source,
+            ObserveAttachedKeyboards = new ObserveAttachedKeyboardsUseCase(keyboards),
+            SelectKeyboard = new SelectKeyboardUseCase(keyboards),
         });
         var deviceLog = new DeviceLogModel(new DeviceLogUseCase(log));
 
@@ -146,10 +148,11 @@ public partial class App : Application
 
     /// <summary>
     /// The keyboard on USB or a simulated one, switched from the Simulator menu. A debug build starts on a simulated
-    /// keyboard when <c>MINIKEYBOARD_SIMULATED_KEYBOARD</c> names one (a simulated model's ID, e.g. <c>8890-3</c>).
+    /// keyboard when <c>MINIKEYBOARD_SIMULATED_KEYBOARD</c> names one (a simulated model's ID, e.g. <c>8890-3</c>). The
+    /// keyboard on USB chosen last time is kept in <paramref name="selectedKeyboard"/>.
     /// </summary>
     private static (IKeyboardConnectionRepository, IKeyboardDeviceRepository, KeyboardSourceUseCase?, IDisposable)
-        Connect(DeviceLogStore log, Func<bool> preventsLightingKeyRepeat)
+        Connect(DeviceLogStore log, string selectedKeyboard, Func<bool> preventsLightingKeyRepeat)
     {
         KeyboardSource initial = KeyboardSource.Hardware;
 #if DEBUG
@@ -157,7 +160,7 @@ public partial class App : Application
         if (SimulatedModel.All().FirstOrDefault(model => model.Id == id) is { } model)
             initial = new KeyboardSource.Simulated(model);
 #endif
-        var source = new KeyboardSourceSwitch(log, initial);
+        var source = new KeyboardSourceSwitch(log, initial, selectedKeyboard);
         var device = new KeyboardDevice(source, log) { PreventsLightingKeyRepeat = preventsLightingKeyRepeat };
         return (source, device, new KeyboardSourceUseCase(source), source);
     }

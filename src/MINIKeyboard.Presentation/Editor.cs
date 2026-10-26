@@ -23,6 +23,12 @@ public sealed class EditorDependencies
 
     /// <summary>The simulator's switch.</summary>
     public KeyboardSourceUseCase? KeyboardSource { get; init; }
+
+    /// <summary>The keyboards plugged in.</summary>
+    public ObserveAttachedKeyboardsUseCase? ObserveAttachedKeyboards { get; init; }
+
+    /// <summary>Choosing which of the keyboards plugged in is open.</summary>
+    public SelectKeyboardUseCase? SelectKeyboard { get; init; }
 }
 
 /// <summary>What the editor holds between the user's doings.</summary>
@@ -56,6 +62,9 @@ internal sealed class EditorState
 
     /// <summary>The keyboard on USB, or a simulated one.</summary>
     public KeyboardSource KeyboardSource { get; set; } = KeyboardSource.Hardware;
+
+    /// <summary>The keyboards on USB and the one open.</summary>
+    public AttachedKeyboards Attached { get; set; } = AttachedKeyboards.None;
 
     public ConnectedKeyboard? Keyboard => Connection.Keyboard;
 
@@ -166,7 +175,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
     }
 
     /// <summary>
-    /// Follows the keyboard until <paramref name="cancellation"/> is cancelled; one that comes is identified at once.
+    /// Follows the keyboard, and the keyboards plugged in, until <paramref name="cancellation"/> is cancelled; one that
+    /// comes is identified at once.
     /// </summary>
     public async Task RunAsync(CancellationToken cancellation = default)
     {
@@ -177,12 +187,25 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
         }
         try
         {
-            await foreach (var connection in dependencies.ObserveConnection.Execute(cancellation))
-                await ConnectionChangedAsync(connection);
+            await Task.WhenAll(FollowConnectionAsync(cancellation), FollowAttachedKeyboardsAsync(cancellation));
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
         }
+    }
+
+    private async Task FollowConnectionAsync(CancellationToken cancellation)
+    {
+        await foreach (var connection in dependencies.ObserveConnection.Execute(cancellation))
+            await ConnectionChangedAsync(connection);
+    }
+
+    private async Task FollowAttachedKeyboardsAsync(CancellationToken cancellation)
+    {
+        if (dependencies.ObserveAttachedKeyboards is not { } observe)
+            return;
+        await foreach (var keyboards in observe.Execute(cancellation))
+            Update(state => state.Attached = keyboards);
     }
 
     // State the views read
@@ -247,6 +270,9 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
     }
 
     public void RetryConnection() => dependencies.RetryConnection.Execute();
+
+    /// <summary>Opens another of the keyboards plugged in. The connection reports "searching" first, as after re-plugging.</summary>
+    public void SelectKeyboard(string id) => dependencies.SelectKeyboard?.Execute(id);
 
     /// <summary>Settles the keyboard's commands and layout, then reads it if it reads back on its own.</summary>
     public async Task IdentifyAsync()

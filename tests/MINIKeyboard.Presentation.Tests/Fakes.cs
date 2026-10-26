@@ -6,54 +6,79 @@ using Channels = System.Threading.Channels;
 namespace MINIKeyboard.Presentation.Tests;
 
 /// <summary>
-/// A keyboard that is plugged in when told. <see cref="Idle"/> completes once the subscriber has taken every state and
-/// asks for the next — the editor has finished with what it was sent.
+/// A keyboard that is plugged in when told — and the keyboards plugged in, and the ones chosen. <see cref="Idle"/>
+/// completes once the subscriber has taken every state and asks for the next — the editor has finished with what it was
+/// sent; <see cref="KeyboardsIdle"/> likewise for the keyboards plugged in.
 /// </summary>
 internal sealed class FakeConnection : IKeyboardConnectionRepository
 {
-    private readonly Channels.Channel<ConnectionState> states = Channels.Channel.CreateUnbounded<ConnectionState>();
-    private readonly Lock gate = new();
-    private TaskCompletionSource idle = NewIdle();
-    private bool subscribed;
+    private readonly Feed<ConnectionState> states = new();
+    private readonly Feed<AttachedKeyboards> keyboards = new();
 
-    public FakeConnection() => states.Writer.TryWrite(ConnectionState.Searching);
+    public FakeConnection() => states.Send(ConnectionState.Searching);
 
-    public Task Idle
-    {
-        get
-        {
-            lock (gate)
-                return idle.Task;
-        }
-    }
+    public Task Idle => states.Idle;
 
-    public void Send(ConnectionState state)
-    {
-        lock (gate)
-            idle = NewIdle();
-        states.Writer.TryWrite(state);
-    }
+    public Task KeyboardsIdle => keyboards.Idle;
 
-    public async IAsyncEnumerable<ConnectionState> ConnectionStates(
-        [EnumeratorCancellation] CancellationToken cancellation = default)
-    {
-        Assert.False(subscribed, "one subscriber");
-        subscribed = true;
-        while (true)
-        {
-            if (!states.Reader.TryRead(out var state))
-            {
-                lock (gate)
-                    idle.TrySetResult();
-                state = await states.Reader.ReadAsync(cancellation);
-            }
-            yield return state;
-        }
-    }
+    public List<string> Selected { get; } = [];
+
+    public void Send(ConnectionState state) => states.Send(state);
+
+    public void Send(AttachedKeyboards attached) => keyboards.Send(attached);
+
+    public IAsyncEnumerable<ConnectionState> ConnectionStates(CancellationToken cancellation = default) =>
+        states.Subscribe(cancellation);
 
     public void Retry() { }
 
-    private static TaskCompletionSource NewIdle() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public IAsyncEnumerable<AttachedKeyboards> AttachedKeyboardUpdates(CancellationToken cancellation = default) =>
+        keyboards.Subscribe(cancellation);
+
+    public void SelectKeyboard(string id) => Selected.Add(id);
+
+    /// <summary>Values sent when told, to one subscriber.</summary>
+    private sealed class Feed<T>
+    {
+        private readonly Channels.Channel<T> values = Channels.Channel.CreateUnbounded<T>();
+        private readonly Lock gate = new();
+        private TaskCompletionSource idle = NewIdle();
+        private bool subscribed;
+
+        public Task Idle
+        {
+            get
+            {
+                lock (gate)
+                    return idle.Task;
+            }
+        }
+
+        public void Send(T value)
+        {
+            lock (gate)
+                idle = NewIdle();
+            values.Writer.TryWrite(value);
+        }
+
+        public async IAsyncEnumerable<T> Subscribe([EnumeratorCancellation] CancellationToken cancellation = default)
+        {
+            Assert.False(subscribed, "one subscriber");
+            subscribed = true;
+            while (true)
+            {
+                if (!values.Reader.TryRead(out var value))
+                {
+                    lock (gate)
+                        idle.TrySetResult();
+                    value = await values.Reader.ReadAsync(cancellation);
+                }
+                yield return value;
+            }
+        }
+
+        private static TaskCompletionSource NewIdle() => new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
 }
 
 internal sealed class FakeDevice : IKeyboardDeviceRepository
@@ -141,6 +166,8 @@ internal sealed class Fixture : IAsyncDisposable
             ChooseLayout = new ChooseLayoutUseCase(profiles),
             ReadKeyboard = new ReadKeyboardUseCase(device),
             SaveKeyboard = new SaveKeyboardUseCase(device),
+            ObserveAttachedKeyboards = new ObserveAttachedKeyboardsUseCase(connection),
+            SelectKeyboard = new SelectKeyboardUseCase(connection),
         });
         var fixture = new Fixture(connection, device, profiles, editor);
         await fixture.SettleAsync();
@@ -153,6 +180,12 @@ internal sealed class Fixture : IAsyncDisposable
     {
         Connection.Send(state);
         await SettleAsync();
+    }
+
+    public async Task SendAsync(AttachedKeyboards attached)
+    {
+        Connection.Send(attached);
+        await Connection.KeyboardsIdle.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
     }
 
     /// <summary>Waits until the editor has dealt with every state sent.</summary>
