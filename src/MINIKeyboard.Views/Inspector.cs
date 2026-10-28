@@ -75,6 +75,10 @@ internal sealed class Inspector
         var ready = editor.IsReady;
         clearKey.IsEnabled = ready && editor.SelectedControl is not null;
         clearLayer.IsEnabled = ready;
+        // They clear what keys and knobs do, not their lights, so the lighting page goes without them.
+        var buttons = editor.Tab == EditorTab.Lighting ? Visibility.Collapsed : Visibility.Visible;
+        clearKey.Visibility = buttons;
+        clearLayer.Visibility = buttons;
         if (editor.HasUnsavedChanges)
         {
             unsaved.Text = $"● {T("Unsaved changes")}";
