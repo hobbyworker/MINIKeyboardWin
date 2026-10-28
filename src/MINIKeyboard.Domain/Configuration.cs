@@ -1,5 +1,29 @@
 namespace MINIKeyboard.Domain;
 
+/// <summary>Some controls of one layer, in control order.</summary>
+/// <param name="Layer">From 0.</param>
+public readonly record struct LayerControls(int Layer, EquatableArray<ControlId> Controls);
+
+/// <summary>What reading one layer of a keyboard brought.</summary>
+/// <param name="actions">The actions read, by control.</param>
+/// <param name="unread">
+/// The controls the read asked for that weren't read, in control order — empty when everything came.
+/// </param>
+/// <param name="outside">
+/// The layout's controls the read doesn't ask for, in control order: they are neither read nor unread.
+/// </param>
+public sealed class LayerRead(
+    IReadOnlyDictionary<ControlId, KeyAction> actions,
+    EquatableArray<ControlId> unread,
+    EquatableArray<ControlId> outside = default)
+{
+    public IReadOnlyDictionary<ControlId, KeyAction> Actions { get; } = actions;
+
+    public EquatableArray<ControlId> Unread { get; } = unread;
+
+    public EquatableArray<ControlId> Outside { get; } = outside;
+}
+
 /// <summary>One layer of what the app holds for a keyboard.</summary>
 public sealed class Layer : IEquatable<Layer>
 {
@@ -97,12 +121,21 @@ public sealed class KeyboardConfiguration : IEquatable<KeyboardConfiguration>
     }
 
     /// <summary>Everything was written.</summary>
-    public void MarkSaved()
+    public void MarkSaved() => MarkSaved([], []);
+
+    /// <summary>
+    /// Everything was written, but <paramref name="exceptControls"/> and the lights of the layers in
+    /// <paramref name="exceptLighting"/> read back otherwise: those stay changed, with the app's values, to be saved
+    /// again.
+    /// </summary>
+    public void MarkSaved(EquatableArray<LayerControls> exceptControls, EquatableArray<int> exceptLighting)
     {
-        foreach (var layer in layers)
+        for (var index = 0; index < layers.Length; index++)
         {
-            layer.ChangedControls.Clear();
-            layer.LightingChanged = false;
+            var layer = layers[index];
+            layer.ChangedControls.IntersectWith(
+                exceptControls.Where(entry => entry.Layer == index).SelectMany(entry => entry.Controls));
+            layer.LightingChanged &= exceptLighting.Contains(index);
         }
     }
 

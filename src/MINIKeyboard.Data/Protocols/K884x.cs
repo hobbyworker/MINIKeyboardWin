@@ -22,11 +22,9 @@ public static class K884x
     public static readonly TimeSpan CommitPause = TimeSpan.FromMilliseconds(200);
 
     /// <summary>
-    /// <c>FA &lt;records&gt; &lt;knob records&gt; &lt;layer + 1&gt;</c> — the standard format reads its 25 records
-    /// (<c>Read_CurKeyBoard_Data</c>), the legacy one all 24 — 15 keys, then 3 knobs of 3 — as <c>FA 18 00</c>. The
-    /// cross-platform app asks <c>FA 0F 03</c> (<c>Read_configuration_clicked</c>) and waits for 24, but a legacy
-    /// keyboard answers as many records as the first number says (514C:8850, type 11: 15). Counted either way,
-    /// <c>FA 18 00</c> comes to 24.
+    /// <c>FA &lt;keys&gt; &lt;knobs&gt; &lt;layer + 1&gt;</c>, as the cross-platform app asks (<c>read_Hidkey_Data</c>):
+    /// <c>FA 19 00</c> reads the standard format's 25 records, <c>FA 0F 03</c> the legacy one's 24 — 15 keys, then 3 knobs
+    /// of 3.
     /// </summary>
     public static byte[]? ReadRecords(int layer, RecordFormat format)
     {
@@ -34,7 +32,7 @@ public static class K884x
         return format switch
         {
             RecordFormat.Standard => [0xFA, 25, 0, layerByte],
-            RecordFormat.Legacy => [0xFA, 24, 0, layerByte],
+            RecordFormat.Legacy => [0xFA, 0x0F, 3, layerByte],
             _ => null,
         };
     }

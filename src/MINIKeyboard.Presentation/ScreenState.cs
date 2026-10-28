@@ -238,7 +238,7 @@ public sealed record KeyboardInfo(
         var details = keyboard.Details;
         Firmware firmware;
         if (identification?.Identity is { } identity)
-            firmware = new Firmware.Reported(identity.Kind, identity.KeyCount, identity.KnobCount);
+            firmware = new Firmware.Reported(identity.Kind, identity.KeyCount, identity.KnobCount, identity.IsKnownKind);
         else if (details is { DeviceRelease: var release } && release != 0)
             firmware = new Firmware.Release($"{release >> 8:X}.{release & 0xFF:X2}");
         else
@@ -331,7 +331,8 @@ public abstract record Firmware
     private Firmware() { }
 
     /// <summary>What a 884x keyboard answered: the type, keys and knobs.</summary>
-    public sealed record Reported(byte Kind, byte Keys, byte Knobs) : Firmware;
+    /// <param name="Tested">Whether the type is one the app was tried with.</param>
+    public sealed record Reported(byte Kind, byte Keys, byte Knobs, bool Tested) : Firmware;
 
     /// <summary><c>bcdDevice</c>, "1.02".</summary>
     public sealed record Release(string Version) : Firmware;

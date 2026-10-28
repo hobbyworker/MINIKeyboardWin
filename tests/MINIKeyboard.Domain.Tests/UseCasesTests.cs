@@ -179,15 +179,27 @@ public class UseCasesTests
     {
         public Queue<Func<KeyboardIdentity?>> Identities { get; } = new();
 
+        /// <summary>What every layer reads as.</summary>
         public Dictionary<ControlId, KeyAction> Actions { get; set; } = [];
+
+        /// <summary>By layer, the controls a read leaves unread.</summary>
+        public Dictionary<int, EquatableArray<ControlId>> Unread { get; } = [];
+
+        /// <summary>The controls no read asks for.</summary>
+        public EquatableArray<ControlId> Outside { get; set; } = [];
+
+        public KeyboardDeviceError? FailRead { get; set; }
 
         public KeyboardDeviceError? FailWrite { get; set; }
 
         public int Asked { get; private set; }
 
+        /// <summary>Reads of actions and of lights.</summary>
+        public int Reads { get; private set; }
+
         public List<KeyboardConfiguration> Writes { get; } = [];
 
-        public LayerLighting LightingResult { get; } = new LayerLighting.PerKey(1, KeyColor.DefaultKeyColors);
+        public LayerLighting LightingResult { get; set; } = new LayerLighting.PerKey(1, KeyColor.DefaultKeyColors);
 
         public Task<KeyboardIdentity?> AskIdentityAsync(CancellationToken cancellation = default)
         {
@@ -195,12 +207,28 @@ public class UseCasesTests
             return Task.FromResult(Identities.TryDequeue(out var next) ? next() : null);
         }
 
-        public Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
-            int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default) =>
-            Task.FromResult<IReadOnlyDictionary<ControlId, KeyAction>>(new Dictionary<ControlId, KeyAction>(Actions));
+        public Task<LayerRead> ReadActionsAsync(
+            int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default)
+        {
+            Reads++;
+            if (FailRead is { } error)
+                throw new KeyboardDeviceException(error);
+            var unread = Unread.GetValueOrDefault(layer);
+            var actions = Actions
+                .Where(pair => !unread.Contains(pair.Key) && !Outside.Contains(pair.Key))
+                .ToDictionary();
+            return Task.FromResult(new LayerRead(actions, unread, Outside));
+        }
 
-        public Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default) =>
-            Task.FromResult(LightingResult);
+        public KeyAction? StoredForm(KeyAction action, RecordFormat format) => action;
+
+        public Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default)
+        {
+            Reads++;
+            return FailRead is { } error
+                ? Task.FromException<LayerLighting>(new KeyboardDeviceException(error))
+                : Task.FromResult(LightingResult);
+        }
 
         public Task WriteAsync(
             KeyboardConfiguration configuration, CommandSet commands, KeyboardLayout layout,
@@ -282,6 +310,37 @@ public class UseCasesTests
         Assert.Equal(new KeyboardDeviceError.Unsupported(), k8890.Error);
     }
 
+    /// <summary>
+    /// A layer whose answers stop short is read as far as they came, and reading goes on with the next layers; what
+    /// didn't come is listed and stays as it was.
+    /// </summary>
+    [Fact]
+    public async Task AShortLayerDoesntStopTheRead()
+    {
+        var key2 = ControlId.Key(2);
+        var device = new FakeDevice
+        {
+            Actions = new() { [Key1] = new KeyAction.Media(MediaKey.Mute), [key2] = KeyAction.Unassigned },
+        };
+        device.Unread[0] = [key2];
+        var configuration = new KeyboardConfiguration(3);
+        configuration.Set(new KeyAction.Media(MediaKey.VolumeUp), key2, 0);
+        var outcome = await new ReadKeyboardUseCase(device).ExecuteAsync(
+            configuration, new KeyboardCapabilities(Legacy), Named("6add1"), TestContext.Current.CancellationToken);
+        Assert.Null(outcome.Error);
+        Assert.Equal([new LayerControls(0, [key2])], outcome.Unread);
+        Assert.Equal(new KeyAction.Media(MediaKey.Mute), outcome.Configuration.Action(Key1, 0));
+        Assert.Equal(new KeyAction.Media(MediaKey.VolumeUp), outcome.Configuration.Action(key2, 0));
+        Assert.True(outcome.Configuration.IsChanged(key2, 0));
+        Assert.Equal(KeyAction.Unassigned, outcome.Configuration.Action(key2, 2));
+        Assert.Equal(3, device.Reads);
+
+        device.Unread.Clear();
+        var full = await new ReadKeyboardUseCase(device).ExecuteAsync(
+            configuration, new KeyboardCapabilities(Legacy), Named("6add1"), TestContext.Current.CancellationToken);
+        Assert.Empty(full.Unread);
+    }
+
     [Fact]
     public async Task SavingMarksTheChangesSaved()
     {
@@ -293,14 +352,154 @@ public class UseCasesTests
         var configuration = new KeyboardConfiguration(3);
         Assert.Equal(new SaveOutcome.NothingToSave(), await save.ExecuteAsync(configuration, capabilities, layout, cancellation));
         configuration.Set(new KeyAction.Media(MediaKey.Mute), Key1, 0);
+        device.Actions[Key1] = new KeyAction.Media(MediaKey.Mute);
         var saved = Assert.IsType<SaveOutcome.Saved>(await save.ExecuteAsync(configuration, capabilities, layout, cancellation));
+        Assert.Equal(SaveCheck.Matched, saved.Check);
         Assert.False(saved.Configuration.HasUnsavedChanges);
         Assert.Equal(new KeyAction.Media(MediaKey.Mute), saved.Configuration.Action(Key1, 0));
         Assert.Equal([configuration], device.Writes);
+        // Only the layer with changes is read back.
+        Assert.Equal(1, device.Reads);
 
         device.FailWrite = new KeyboardDeviceError.WriteFailed(7);
         var exception = await Assert.ThrowsAsync<KeyboardDeviceException>(
             () => save.ExecuteAsync(configuration, capabilities, layout, cancellation));
         Assert.Equal(new KeyboardDeviceError.WriteFailed(7), exception.Error);
+    }
+
+    /// <summary>
+    /// What read back otherwise stays changed, with the value the app has; the rest is saved.
+    /// </summary>
+    [Fact]
+    public async Task WhatReadsBackOtherwiseStaysUnsaved()
+    {
+        var key2 = ControlId.Key(2);
+        var device = new FakeDevice
+        {
+            Actions = new()
+            {
+                [Key1] = new KeyAction.Media(MediaKey.Mute),
+                [key2] = new KeyAction.Media(MediaKey.VolumeDown),
+            },
+        };
+        var configuration = new KeyboardConfiguration(3);
+        configuration.Set(new KeyAction.Media(MediaKey.Mute), Key1, 1);
+        configuration.Set(new KeyAction.Media(MediaKey.VolumeUp), key2, 1);
+        configuration.SetLighting(new LayerLighting.ColorMode(LightColor.Red, 2), 0);
+        var outcome = await new SaveKeyboardUseCase(device).ExecuteAsync(
+            configuration, new KeyboardCapabilities(Legacy), Named("6add1"), TestContext.Current.CancellationToken);
+        var saved = Assert.IsType<SaveOutcome.Saved>(outcome);
+        Assert.Equal(new SaveCheck.Differs([new LayerControls(1, [key2])], []), saved.Check);
+        Assert.True(saved.Configuration.IsChanged(key2, 1));
+        Assert.Equal(new KeyAction.Media(MediaKey.VolumeUp), saved.Configuration.Action(key2, 1));
+        Assert.False(saved.Configuration.IsChanged(Key1, 1));
+        // A legacy keyboard's lights don't read back.
+        Assert.False(saved.Configuration.Layers[0].LightingChanged);
+        Assert.Equal(1, device.Reads);
+
+        // A control that doesn't read back at all differs too.
+        device.Actions.Remove(key2);
+        saved = Assert.IsType<SaveOutcome.Saved>(await new SaveKeyboardUseCase(device).ExecuteAsync(
+            configuration, new KeyboardCapabilities(Legacy), Named("6add1"), TestContext.Current.CancellationToken));
+        Assert.Equal(new SaveCheck.Differs([new LayerControls(1, [key2])], []), saved.Check);
+    }
+
+    /// <summary>A read-back that fails, or leaves a control written unread, can't tell — the save stands.</summary>
+    [Fact]
+    public async Task AReadBackThatFailsCantTell()
+    {
+        var device = new FakeDevice
+        {
+            Actions = new() { [Key1] = new KeyAction.Media(MediaKey.Mute) },
+            FailRead = new KeyboardDeviceError.NoReply(),
+        };
+        var configuration = new KeyboardConfiguration(3);
+        configuration.Set(new KeyAction.Media(MediaKey.Mute), Key1, 0);
+        configuration.Set(new KeyAction.Media(MediaKey.Mute), Key1, 2);
+        var save = new SaveKeyboardUseCase(device);
+        var capabilities = new KeyboardCapabilities(Standard);
+        var cancellation = TestContext.Current.CancellationToken;
+        var saved = Assert.IsType<SaveOutcome.Saved>(
+            await save.ExecuteAsync(configuration, capabilities, Named("6add1"), cancellation));
+        Assert.Equal(SaveCheck.CouldNotCheck, saved.Check);
+        Assert.False(saved.Configuration.HasUnsavedChanges);
+        Assert.Equal(2, device.Reads);
+
+        device.FailRead = null;
+        device.Unread[2] = [Key1];
+        saved = Assert.IsType<SaveOutcome.Saved>(
+            await save.ExecuteAsync(configuration, capabilities, Named("6add1"), cancellation));
+        Assert.Equal(SaveCheck.CouldNotCheck, saved.Check);
+        Assert.False(saved.Configuration.HasUnsavedChanges);
+    }
+
+    /// <summary>The 8890 and keyboards that don't answer identification aren't read back.</summary>
+    [Fact]
+    public async Task KeyboardsThatDontReadBackArentChecked()
+    {
+        var device = new FakeDevice();
+        var configuration = new KeyboardConfiguration(3);
+        configuration.Set(new KeyAction.Media(MediaKey.Mute), Key1, 0);
+        configuration.SetLighting(new LayerLighting.ModeOnly(1), 0);
+        foreach (var commands in new[] { K8890, new CommandSet.Records(RecordFormat.Unidentified) })
+        {
+            var saved = Assert.IsType<SaveOutcome.Saved>(await new SaveKeyboardUseCase(device).ExecuteAsync(
+                configuration, new KeyboardCapabilities(commands), Named("6add1"), TestContext.Current.CancellationToken));
+            Assert.Equal(SaveCheck.NotChecked, saved.Check);
+            Assert.False(saved.Configuration.HasUnsavedChanges);
+        }
+        Assert.Equal(0, device.Reads);
+    }
+
+    /// <summary>A standard keyboard's lights read back too: those that come back otherwise stay changed.</summary>
+    [Fact]
+    public async Task LightsThatReadBackOtherwiseStayUnsaved()
+    {
+        var device = new FakeDevice();
+        var configuration = new KeyboardConfiguration(3);
+        var written = new LayerLighting.PerKey(3, KeyColor.DefaultKeyColors);
+        configuration.SetLighting(written, 1);
+        var save = new SaveKeyboardUseCase(device);
+        var capabilities = new KeyboardCapabilities(Standard);
+        var cancellation = TestContext.Current.CancellationToken;
+        var saved = Assert.IsType<SaveOutcome.Saved>(
+            await save.ExecuteAsync(configuration, capabilities, Named("6add1"), cancellation));
+        Assert.Equal(new SaveCheck.Differs([], [1]), saved.Check);
+        Assert.True(saved.Configuration.Layers[1].LightingChanged);
+        Assert.Equal(written, saved.Configuration.Lighting(1));
+        Assert.Equal(1, device.Reads);
+
+        device.LightingResult = written;
+        saved = Assert.IsType<SaveOutcome.Saved>(
+            await save.ExecuteAsync(configuration, capabilities, Named("6add1"), cancellation));
+        Assert.Equal(SaveCheck.Matched, saved.Check);
+        Assert.False(saved.Configuration.HasUnsavedChanges);
+    }
+
+    /// <summary>
+    /// Where nothing written could be compared — a legacy keyboard's lights, a control the read doesn't ask for — the
+    /// save matched; such a control is saved.
+    /// </summary>
+    [Fact]
+    public async Task NothingComparedIsAMatch()
+    {
+        var device = new FakeDevice();
+        var save = new SaveKeyboardUseCase(device);
+        var capabilities = new KeyboardCapabilities(Legacy);
+        var layout = Named("16add3");
+        var cancellation = TestContext.Current.CancellationToken;
+        var configuration = new KeyboardConfiguration(3);
+        configuration.SetLighting(new LayerLighting.ColorMode(LightColor.Green, 1), 0);
+        var saved = Assert.IsType<SaveOutcome.Saved>(await save.ExecuteAsync(configuration, capabilities, layout, cancellation));
+        Assert.Equal(SaveCheck.Matched, saved.Check);
+        Assert.Equal(0, device.Reads);
+
+        var outside = ControlId.Knob(3, KnobPart.RotateRight);
+        device.Outside = [outside];
+        configuration = new KeyboardConfiguration(3);
+        configuration.Set(new KeyAction.Media(MediaKey.Mute), outside, 0);
+        saved = Assert.IsType<SaveOutcome.Saved>(await save.ExecuteAsync(configuration, capabilities, layout, cancellation));
+        Assert.Equal(SaveCheck.Matched, saved.Check);
+        Assert.False(saved.Configuration.HasUnsavedChanges);
     }
 }

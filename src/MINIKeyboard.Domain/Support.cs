@@ -150,7 +150,7 @@ public sealed record SimulatedModel(UsbIdentity Usb, SimulatedKind Kind)
             var identity = new KeyboardIdentity((byte)layout.KeyCount, (byte)layout.KnobCount, kind);
             if (KeyboardLayout.IdentifiedId(identity, productId) != layout.Id)
                 continue;
-            // 1189:8851 is not among the IDs the app looks for; 514C:8851 is.
+            // Simulated 8851 keyboards stay under 514C, as they were before the app looked for 1189:8851 too.
             var vendor = productId == 0x8851 ? (ushort)0x514C : (ushort)0x1189;
             return new SimulatedModel(new UsbIdentity(vendor, productId), new SimulatedKind.Identified(identity));
         }

@@ -389,6 +389,8 @@ internal static class KeyboardInfoView
                 var column = new StackPanel { Spacing = 2 };
                 column.Children.Add(Value(reported.Kind.ToString(System.Globalization.CultureInfo.InvariantCulture)));
                 column.Children.Add(Ui.Caption(T("Keys: %lld · Knobs: %lld", reported.Keys, reported.Knobs)));
+                if (!reported.Tested)
+                    column.Children.Add(Ui.Caption(T("Not tested yet")));
                 Add(T("Firmware"), column);
                 break;
             case Firmware.Release release:

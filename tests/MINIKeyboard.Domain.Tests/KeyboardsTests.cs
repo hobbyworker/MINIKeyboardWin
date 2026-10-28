@@ -17,11 +17,14 @@ public class KeyboardsTests
         Assert.Equal(KeyboardFamily.K8890, KeyboardFamilies.Of(new UsbIdentity(0x1189, 0x8890)));
         Assert.Equal(KeyboardFamily.K884x, KeyboardFamilies.Of(new UsbIdentity(0x1189, 0x8840)));
         Assert.Equal(KeyboardFamily.K884x, KeyboardFamilies.Of(new UsbIdentity(0x514C, 0x8851)));
-        // The cross-platform app looks for 8851 under 514C only.
-        Assert.Null(KeyboardFamilies.Of(new UsbIdentity(0x1189, 0x8851)));
+        Assert.Equal(KeyboardFamily.K884x, KeyboardFamilies.Of(new UsbIdentity(0x1189, 0x8851)));
         Assert.Null(KeyboardFamilies.Of(new UsbIdentity(0x05AC, 0x8890)));
-        Assert.Equal(16, KeyboardFamilies.Supported.Count);
-        Assert.Equal(16, KeyboardFamilies.Supported.Distinct().Count());
+        Assert.Equal(17, KeyboardFamilies.Supported.Count);
+        Assert.Equal(17, KeyboardFamilies.Supported.Distinct().Count());
+        ushort[] products = [0x8842, 0x8840, 0x8830, 0x8831, 0x8832, 0x8833, 0x8850, 0x8851];
+        Assert.Equal(
+            [new(0x1189, 0x8890), .. products.Select(p => new UsbIdentity(0x1189, p)), .. products.Select(p => new UsbIdentity(0x514C, p))],
+            KeyboardFamilies.Supported.ToArray());
     }
 
     [Fact]
@@ -32,8 +35,20 @@ public class KeyboardsTests
     {
         Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(6, 1, 10).RecordFormat);
         Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(12, 2, 11).RecordFormat);
+        Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(12, 2, 12).RecordFormat);
+        Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(12, 2, 255).RecordFormat);
         Assert.Equal(RecordFormat.Legacy, new KeyboardIdentity(6, 1, 0).RecordFormat);
         Assert.Equal(RecordFormat.Legacy, new KeyboardIdentity(6, 1, 1).RecordFormat);
+        Assert.Equal(RecordFormat.Legacy, new KeyboardIdentity(6, 1, 9).RecordFormat);
+    }
+
+    /// <summary>The types the app was tried with; any other is handled alike, but marked.</summary>
+    [Fact]
+    public void KnownTypes()
+    {
+        Assert.All(new byte[] { 0, 1, 10, 11 }, kind => Assert.True(new KeyboardIdentity(12, 2, kind).IsKnownKind));
+        Assert.All(new byte[] { 2, 9, 12, 255 }, kind => Assert.False(new KeyboardIdentity(12, 2, kind).IsKnownKind));
+        Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(12, 2, 12).RecordFormat);
     }
 
     [Fact]
@@ -81,7 +96,7 @@ public class KeyboardsTests
         Assert.Equal(new LightingSupport.PerKeyColor(new(0, 5), 16), Capabilities(Standard).Lighting);
         Assert.Equal(new LightingSupport.ColorAndMode(new(0, 5)), Capabilities(Legacy).Lighting);
         Assert.Equal(ReadSupport.OnConnect, Capabilities(Standard).Reading);
-        Assert.Equal(ReadSupport.OnRequest, Capabilities(Legacy).Reading);
+        Assert.Equal(ReadSupport.OnConnect, Capabilities(Legacy).Reading);
         Assert.Equal(ReadSupport.Never, Capabilities(K8890).Reading);
         Assert.Equal(ReadSupport.Never, Capabilities(Unidentified).Reading);
     }

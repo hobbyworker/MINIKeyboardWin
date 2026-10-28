@@ -46,7 +46,16 @@ public abstract record Notice
     /// <summary>Saved; to a simulated keyboard when <paramref name="Simulated"/> — nothing went to a real one.</summary>
     public sealed record Saved(bool Simulated = false) : Notice;
 
+    /// <summary>Saved, but some controls or lights read back otherwise than written; they stay unsaved.</summary>
+    public sealed record SavedButDiffers : Notice;
+
+    /// <summary>Saved, but what was written couldn't all be read back to compare.</summary>
+    public sealed record SavedUnchecked : Notice;
+
     public sealed record ReadComplete : Notice;
+
+    /// <summary>Read, but the answers for some controls didn't come; those are shown as they were.</summary>
+    public sealed record ReadIncomplete : Notice;
 
     public sealed record NothingToSave : Notice;
 
@@ -71,11 +80,15 @@ public abstract record Notice
 
     public sealed record Unsupported : Notice;
 
+    /// <summary>The keyboard answered with a type (<paramref name="Kind"/>) the app wasn't tried with.</summary>
+    public sealed record UntestedFirmware(int Kind) : Notice;
+
     public bool IsError => this is not (Saved or ReadComplete or NothingToSave);
 
     /// <summary>How long it stays.</summary>
     public TimeSpan Lifetime => this switch
     {
+        UntestedFirmware => TimeSpan.FromSeconds(10),
         _ when IsError => TimeSpan.FromSeconds(6),
         Saved { Simulated: true } => TimeSpan.FromSeconds(4),
         _ => TimeSpan.FromMilliseconds(2500),

@@ -50,7 +50,12 @@ public sealed class KeyboardDevice : IKeyboardDeviceRepository
         return K884x.Identity(reply) ?? throw Failure(new KeyboardDeviceError.InvalidReply());
     }
 
-    public async Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
+    /// <summary>
+    /// Takes the answers in order, one record each. When they stop after the first, what came is kept and the controls
+    /// of the records that didn't come are unread — as is a control whose record is of a kind the app doesn't know.
+    /// A control in no record, or in one past those the format reads, is outside the read.
+    /// </summary>
+    public async Task<LayerRead> ReadActionsAsync(
         int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default)
     {
         var request = K884x.ReadRecords(layer, format) ?? throw Failure(new KeyboardDeviceError.Unsupported());
@@ -58,18 +63,48 @@ public sealed class KeyboardDevice : IKeyboardDeviceRepository
         channel.DiscardPendingReplies();
         await SendAsync(request, channel, cancellation);
         var actions = new Dictionary<ControlId, KeyAction>();
+        var unknown = new List<ControlId>();
         var count = K884x.ReadReplyCount(format);
+        var received = 0;
         for (var recordId = 1; recordId <= count; recordId++)
         {
-            var reply = await ReplyAsync(channel, replyTimeout, cancellation)
-                ?? throw Failure(new KeyboardDeviceError.NoReply());
-            if (Numbers.ControlInRecord(checked((byte)recordId), layout) is { } control
-                && Records.Decode(K884x.Record(reply), format) is { } action)
+            if (await ReplyAsync(channel, replyTimeout, cancellation) is not { } reply)
             {
-                actions[control] = action;
+                if (received == 0)
+                    throw Failure(new KeyboardDeviceError.NoReply());
+                break;
             }
+            received = recordId;
+            if (Numbers.ControlInRecord(checked((byte)recordId), layout) is not { } control)
+                continue;
+            if (Records.Decode(K884x.Record(reply), format) is { } action)
+                actions[control] = action;
+            else
+                unknown.Add(control);
         }
-        return actions;
+        var unread = new List<ControlId>();
+        var outside = new List<ControlId>();
+        foreach (var control in layout.Controls.Order())
+        {
+            if (Numbers.Record(control, layout) is not { } record || record > count)
+                outside.Add(control);
+            else if (record > received || unknown.Contains(control))
+                unread.Add(control);
+        }
+        return new LayerRead(actions, [.. unread], [.. outside]);
+    }
+
+    /// <summary>Through this format's codec and back.</summary>
+    public KeyAction? StoredForm(KeyAction action, RecordFormat format)
+    {
+        try
+        {
+            return Records.Decode(Records.Encode(action, 1, 0, format), format);
+        }
+        catch (KeyboardDeviceException)
+        {
+            return null;
+        }
     }
 
     public async Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default)

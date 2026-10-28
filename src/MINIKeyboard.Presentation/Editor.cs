@@ -364,7 +364,10 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
         return true;
     }
 
-    /// <summary>Settles the keyboard's commands and layout, then reads it if it reads back on its own.</summary>
+    /// <summary>
+    /// Settles the keyboard's commands and layout, then reads it if it reads back on its own. A keyboard of a type the
+    /// app wasn't tried with is said so after that, in place of what the read said.
+    /// </summary>
     public async Task IdentifyAsync()
     {
         if (state.Keyboard is not { } keyboard || state.Identification is not null || state.Activity is not null)
@@ -406,6 +409,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
         });
         if (readNow)
             await ReadAsync(announce: false);
+        if (state.ConnectionSerial == serial && identified.Identity is { IsKnownKind: false } identity)
+            Update(state => state.Show(new Notice.UntestedFirmware(identity.Kind)));
     }
 
     // Reading and saving
@@ -430,6 +435,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             state.Configuration = outcome.Configuration;
             if (outcome.Error is not null)
                 state.Show(new Notice.ReadFailed());
+            else if (!outcome.Unread.IsEmpty)
+                state.Show(new Notice.ReadIncomplete());
             else if (announce)
                 state.Show(new Notice.ReadComplete());
         });
@@ -466,7 +473,12 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             {
                 case (SaveOutcome.Saved saved, _):
                     state.Configuration = saved.Configuration;
-                    state.Show(new Notice.Saved(state.KeyboardSource.IsSimulated));
+                    state.Show(saved.Check switch
+                    {
+                        SaveCheck.Differs => new Notice.SavedButDiffers(),
+                        SaveCheck.CouldNotCheckCheck => new Notice.SavedUnchecked(),
+                        _ => new Notice.Saved(state.KeyboardSource.IsSimulated),
+                    });
                     break;
                 case (SaveOutcome.NothingToSave, _):
                     state.Show(new Notice.NothingToSave());

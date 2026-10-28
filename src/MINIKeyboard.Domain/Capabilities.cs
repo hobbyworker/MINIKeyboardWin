@@ -24,9 +24,6 @@ public enum ReadSupport
 
     /// <summary>Asked as soon as it is connected, as the cross-platform app does.</summary>
     OnConnect,
-
-    /// <summary>Asked only when the user asks.</summary>
-    OnRequest,
 }
 
 /// <summary>What a connected keyboard can hold and do, from the commands it takes.</summary>
@@ -94,8 +91,7 @@ public sealed record KeyboardCapabilities(CommandSet Commands)
 
     public ReadSupport Reading => Commands switch
     {
-        CommandSet.Records { Format: RecordFormat.Standard } => ReadSupport.OnConnect,
-        CommandSet.Records { Format: RecordFormat.Legacy } => ReadSupport.OnRequest,
+        CommandSet.Records { Format: RecordFormat.Standard or RecordFormat.Legacy } => ReadSupport.OnConnect,
         _ => ReadSupport.Never,
     };
 

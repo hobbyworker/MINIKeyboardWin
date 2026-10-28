@@ -90,6 +90,11 @@ internal sealed class FakeDevice : IKeyboardDeviceRepository
 
     public Dictionary<ControlId, KeyAction> Actions { get; set; } = [];
 
+    /// <summary>The controls each read leaves unread.</summary>
+    public EquatableArray<ControlId> Unread { get; set; } = [];
+
+    public KeyboardDeviceError? FailRead { get; set; }
+
     public KeyboardDeviceError? FailWrite { get; set; }
 
     public List<KeyboardConfiguration> Writes { get; } = [];
@@ -110,13 +115,17 @@ internal sealed class FakeDevice : IKeyboardDeviceRepository
         return held;
     }
 
-    public async Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
+    public async Task<LayerRead> ReadActionsAsync(
         int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default)
     {
         Reads++;
         await gate.WaitAsync(cancellation);
-        return new Dictionary<ControlId, KeyAction>(Actions);
+        if (FailRead is { } error)
+            throw new KeyboardDeviceException(error);
+        return new LayerRead(new Dictionary<ControlId, KeyAction>(Actions), Unread);
     }
+
+    public KeyAction? StoredForm(KeyAction action, RecordFormat format) => action;
 
     public Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default) =>
         Task.FromResult<LayerLighting>(new LayerLighting.PerKey(0, KeyColor.DefaultKeyColors));

@@ -40,9 +40,20 @@ public interface IKeyboardDeviceRepository
     /// <summary>Asks a 884x keyboard who it is (<c>FB FB FB</c>) once. Null when no answer comes in time.</summary>
     Task<KeyboardIdentity?> AskIdentityAsync(CancellationToken cancellation = default);
 
-    /// <summary>The actions one layer holds, by control, for the controls of <paramref name="layout"/> — standard and legacy formats only.</summary>
-    Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
+    /// <summary>
+    /// The actions one layer holds, by control, for the controls of <paramref name="layout"/> — standard and legacy
+    /// formats only. Answers that stop coming after the first leave the controls of the rest unread, as does a record
+    /// of a kind the app doesn't know; no answer at all throws. Controls in records the format doesn't read are
+    /// outside the read.
+    /// </summary>
+    Task<LayerRead> ReadActionsAsync(
         int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default);
+
+    /// <summary>
+    /// <paramref name="action"/> as the keyboard's records keep it in <paramref name="format"/> — what reading it back
+    /// gives; null when the records can't hold it.
+    /// </summary>
+    KeyAction? StoredForm(KeyAction action, RecordFormat format);
 
     /// <summary>One layer's lights — the standard format only.</summary>
     Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default);

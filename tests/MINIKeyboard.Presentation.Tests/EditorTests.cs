@@ -68,6 +68,21 @@ public class EditorTests
         Assert.False(editor.HasUnsavedChanges);
     }
 
+    /// <summary>A legacy keyboard is read on connecting too, as the cross-platform app's 2025-06 builds do; one that
+    /// doesn't answer identification can't be read.</summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ALegacyKeyboardIsReadOnConnectAnUnidentifiedOneIsNot(bool answers)
+    {
+        await using var fixture = await Fixture.CreateAsync(device =>
+            device.Identity = answers ? new KeyboardIdentity(6, 1, 0) : null);
+        await fixture.PlugAsync(K8840());
+        Assert.True(fixture.Editor.IsReady);
+        Assert.Equal(answers ? 3 : 0, fixture.Device.Reads);
+        Assert.Null(fixture.Editor.Notice);
+    }
+
     [Fact]
     public async Task AStandardKeyboardIsReadOnConnect()
     {
@@ -483,5 +498,94 @@ public class EditorTests
         Assert.Equal(new Notice.Unsupported(), editor.Notice);
         editor.ExpireNotice(editor.NoticeSerial);
         Assert.Null(editor.Notice);
+    }
+
+    /// <summary>
+    /// A read whose answers for some controls didn't come says so — the read made on connecting too, though it says
+    /// nothing when all came.
+    /// </summary>
+    [Fact]
+    public async Task AReadThatLeftControlsUnreadSaysSo()
+    {
+        await using var fixture = await Fixture.CreateAsync(device =>
+        {
+            device.Identity = new KeyboardIdentity(6, 1, 10);
+            device.Unread = [ControlId.Key(6)];
+        });
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        Assert.Equal(new Notice.ReadIncomplete(), editor.Notice);
+        Assert.True(editor.Notice!.IsError);
+
+        fixture.Device.Unread = [];
+        await editor.ReadAsync();
+        Assert.Equal(new Notice.ReadComplete(), editor.Notice);
+        fixture.Device.FailRead = new KeyboardDeviceError.NoReply();
+        await editor.ReadAsync();
+        Assert.Equal(new Notice.ReadFailed(), editor.Notice);
+    }
+
+    /// <summary>
+    /// After a save, a keyboard that reads back is read: what matches is saved; what reads back otherwise stays
+    /// unsaved; a keyboard that can't be read back leaves it saved, and says so.
+    /// </summary>
+    [Fact]
+    public async Task ASaveIsReadBack()
+    {
+        await using var fixture = await Fixture.CreateAsync(device => device.Identity = new KeyboardIdentity(6, 1, 10));
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        var device = fixture.Device;
+        editor.Select(ControlRef.Key(1));
+        var reads = device.Reads;
+
+        editor.AssignMedia(MediaChoice.Mute);
+        device.Actions = new() { [ControlId.Key(1)] = new KeyAction.Media(MediaKey.Mute) };
+        await editor.SaveAsync();
+        Assert.Equal(new Notice.Saved(), editor.Notice);
+        Assert.False(editor.HasUnsavedChanges);
+        Assert.Equal(reads + 1, device.Reads);
+
+        editor.AssignMedia(MediaChoice.VolumeUp);
+        await editor.SaveAsync();
+        Assert.Equal(new Notice.SavedButDiffers(), editor.Notice);
+        Assert.True(editor.HasUnsavedChanges);
+        var drawn = Control(editor.Drawing!, ControlRef.Key(1));
+        Assert.True(drawn.IsChanged);
+        Assert.Equal(new ActionCaption.Media(MediaChoice.VolumeUp), drawn.Caption);
+
+        device.FailRead = new KeyboardDeviceError.NoReply();
+        await editor.SaveAsync();
+        Assert.Equal(new Notice.SavedUnchecked(), editor.Notice);
+        Assert.True(editor.Notice!.IsError);
+        Assert.False(editor.HasUnsavedChanges);
+        Assert.Equal(3, device.Writes.Count);
+    }
+
+    /// <summary>
+    /// A keyboard of a type the app wasn't tried with is said so once it is connected — in place of what the read on
+    /// connecting said — and its information says so too.
+    /// </summary>
+    [Theory]
+    [InlineData(10, null)]
+    [InlineData(11, null)]
+    [InlineData(12, 12)]
+    [InlineData(2, 2)]
+    public async Task AnUntestedTypeIsSaidSo(byte kind, int? untested)
+    {
+        await using var fixture = await Fixture.CreateAsync(device =>
+        {
+            device.Identity = new KeyboardIdentity(12, 2, kind);
+            device.Unread = [ControlId.Key(12)];
+        });
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        var standard = kind >= 10;
+        Notice expected = untested is { } type ? new Notice.UntestedFirmware(type) : new Notice.ReadIncomplete();
+        Assert.Equal(expected, editor.Notice);
+        var info = editor.KeyboardInfo!;
+        Assert.Equal(new Firmware.Reported(kind, 12, 2, untested is null), info.Firmware);
+        Assert.Equal(standard ? new InfoCommands.Standard() : new InfoCommands.Legacy(), info.Commands);
+        Assert.Equal(TimeSpan.FromSeconds(10), new Notice.UntestedFirmware(12).Lifetime);
     }
 }

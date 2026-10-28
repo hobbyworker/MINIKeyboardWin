@@ -194,7 +194,11 @@ internal static class Names
     {
         Notice.Saved { Simulated: true } => T("Saved to the simulator — nothing was written to a keyboard."),
         Notice.Saved => T("Saved to the keyboard."),
+        Notice.SavedButDiffers =>
+            T("Saved, but some keys or knobs read back differently. Those changes stay unsaved."),
+        Notice.SavedUnchecked => T("Saved, but the keyboard couldn’t be read back to check."),
         Notice.ReadComplete => T("Read from the keyboard."),
+        Notice.ReadIncomplete => T("Some keys or knobs couldn’t be read. They’re shown as before."),
         Notice.NothingToSave => T("Nothing to save — no key has changed."),
         Notice.IdentifyFailed => T("The keyboard couldn’t be asked what it is."),
         Notice.ReadFailed => T("Reading from the keyboard failed."),
@@ -205,6 +209,9 @@ internal static class Names
         Notice.ModifiersOnlyAlone =>
             T("Modifiers alone make the key a modifier key, so they can’t go with other presses."),
         Notice.NeedsColorKey needs => T("Only keys 1–%lld have a color. Select one of them.", needs.Keys),
+        Notice.UntestedFirmware untested =>
+            T("This keyboard’s firmware (type %lld) hasn’t been tested yet. If keys read or save wrong, please report it with the device log.",
+                untested.Kind),
         _ => T("This keyboard can’t do that."),
     };
 
@@ -297,7 +304,7 @@ internal static class Names
     public static string CommandsText(InfoCommands commands) => commands switch
     {
         InfoCommands.Packets packets => T("8890 Packets · %@", T("Report ID %lld", packets.ReportId)),
-        InfoCommands.Standard => T("884x · Standard Firmware (Type 10)"),
+        InfoCommands.Standard => T("884x · Standard Firmware"),
         InfoCommands.Legacy => T("884x · Legacy Firmware"),
         InfoCommands.Unidentified => T("884x · Doesn’t Answer Identification"),
         _ => "—",

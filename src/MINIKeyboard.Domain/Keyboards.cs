@@ -38,8 +38,8 @@ public static class KeyboardFamilies
     public static readonly UsbIdentity K8890Usb = new(0x1189, 0x8890);
 
     /// <summary>
-    /// Every keyboard the app looks for, in the order it looks. The cross-platform app looks for the first seven
-    /// product IDs under vendor 1189 and all eight under 514C.
+    /// Every keyboard the app looks for, in the order it looks. The cross-platform app looks for all eight product IDs
+    /// under vendor 1189, then under 514C.
     /// </summary>
     public static readonly EquatableArray<UsbIdentity> Supported = new(SupportedIdentities());
 
@@ -47,7 +47,7 @@ public static class KeyboardFamilies
     {
         ushort[] products = [0x8842, 0x8840, 0x8830, 0x8831, 0x8832, 0x8833, 0x8850, 0x8851];
         yield return K8890Usb;
-        foreach (var product in products.Take(7))
+        foreach (var product in products)
             yield return new UsbIdentity(0x1189, product);
         foreach (var product in products)
             yield return new UsbIdentity(0x514C, product);
@@ -103,13 +103,19 @@ public abstract record CommandSet
 
 /// <summary>What a 884x keyboard answers when asked who it is (<c>FB FB FB</c>).</summary>
 /// <param name="Kind">
-/// 10 for the standard record format — and 11, a twelve-key keyboard (514C:8850) that stores and reads standard
-/// records though the cross-platform app takes it for legacy — anything else for the legacy one. On a keyboard of four
-/// keys and a knob it also picks between two layouts.
+/// 10 and up for the standard record format (the cross-platform app's <c>version &lt; 10</c>; 11 on a 514C:8850), below
+/// 10 for the legacy one. On a keyboard of four keys and a knob it also picks between two layouts.
 /// </param>
 public readonly record struct KeyboardIdentity(byte KeyCount, byte KnobCount, byte Kind)
 {
-    public RecordFormat RecordFormat => Kind is 10 or 11 ? RecordFormat.Standard : RecordFormat.Legacy;
+    public RecordFormat RecordFormat => Kind >= 10 ? RecordFormat.Standard : RecordFormat.Legacy;
+
+    /// <summary>
+    /// Whether the type is one the app's rules were made from: 0 and 1, which the cross-platform app tells two layouts of
+    /// four keys and a knob apart by, 10, its standard firmware, and 11, the 514C:8850 tried. Any other is handled the
+    /// same way, but untested.
+    /// </summary>
+    public bool IsKnownKind => Kind is 0 or 1 or 10 or 11;
 }
 
 /// <summary>What the app learned about a keyboard once it was connected.</summary>

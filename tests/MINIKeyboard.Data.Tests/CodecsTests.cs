@@ -201,7 +201,9 @@ public class CodecsTests
             new LayerLighting.PerKey(4, [.. Enumerable.Repeat(new KeyColor(9, 9, 9), 16)]),
             K884x.LightingReply(reply));
         Assert.Equal(Bytes(0xFA, 25, 0, 1), K884x.ReadRecords(0, RecordFormat.Standard));
-        Assert.Equal(Bytes(0xFA, 0x18, 0, 3), K884x.ReadRecords(2, RecordFormat.Legacy));
+        Assert.Equal(Bytes(0xFA, 0x0F, 3, 3), K884x.ReadRecords(2, RecordFormat.Legacy));
+        Assert.Equal(25, K884x.ReadReplyCount(RecordFormat.Standard));
+        Assert.Equal(24, K884x.ReadReplyCount(RecordFormat.Legacy));
         Assert.Null(K884x.ReadRecords(0, RecordFormat.Unidentified));
     }
 
