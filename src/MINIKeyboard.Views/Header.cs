@@ -320,6 +320,7 @@ internal sealed class Header
         };
         var connectedNow = status is ConnectionStatus.Connected;
         Show(Keyboards, editor.KeyboardChoices.Count > 0);
+        Keyboards.IsEnabled = editor.CanSwitchKeyboard;
         Show(Info, connectedNow && editor.KeyboardInfo is not null);
         Show(identify, status is ConnectionStatus.Connected { IsIdentified: false } && activity is null);
         Show(retry, status is ConnectionStatus.NeedsPermission or ConnectionStatus.OpenFailed);

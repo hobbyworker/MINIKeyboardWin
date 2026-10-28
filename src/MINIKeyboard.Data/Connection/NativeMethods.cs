@@ -35,7 +35,16 @@ internal static unsafe partial class NativeMethods
     /// <summary><c>MAX_DEVICE_ID_LEN</c>, in characters.</summary>
     public const int MaxDeviceIdLength = 200;
 
+    /// <summary><c>DEVPROP_TYPE_FILETIME</c>.</summary>
+    public const uint DevpropTypeFiletime = 0x10;
+
     public static readonly nint InvalidHandle = -1;
+
+    /// <summary>
+    /// <c>DEVPKEY_Device_LastArrivalDate</c>: when the device last arrived, a <c>FILETIME</c> (Windows 10 and later).
+    /// </summary>
+    public static readonly DevPropKey DevicePropertyLastArrivalDate =
+        new() { FormatId = new Guid("83da6326-97a6-4088-9453-a1923f573b29"), PropertyId = 102 };
 
     // hid.dll
 
@@ -110,6 +119,10 @@ internal static unsafe partial class NativeMethods
     [LibraryImport("cfgmgr32.dll")]
     public static partial uint CM_Get_Device_IDW(uint device, char* buffer, uint bufferLength, uint flags);
 
+    [LibraryImport("cfgmgr32.dll")]
+    public static partial uint CM_Get_DevNode_PropertyW(
+        uint device, in DevPropKey propertyKey, out uint propertyType, byte* buffer, ref uint bufferSize, uint flags);
+
     // kernel32.dll
 
     [LibraryImport("kernel32.dll", EntryPoint = "CreateFileW", SetLastError = true,
@@ -157,6 +170,14 @@ internal struct SpDevinfoData
     public Guid ClassGuid;
     public uint DevInst;
     public nuint Reserved;
+}
+
+/// <summary><c>DEVPROPKEY</c>.</summary>
+[StructLayout(LayoutKind.Sequential)]
+internal struct DevPropKey
+{
+    public Guid FormatId;
+    public uint PropertyId;
 }
 
 /// <summary><c>HIDD_ATTRIBUTES</c>.</summary>

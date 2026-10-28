@@ -23,6 +23,11 @@ namespace MINIKeyboard.Data.Connection;
 /// <param name="OutputReportId">
 /// The report ID of the first output item; 0 when the reports aren't numbered, null when there are no output items.
 /// </param>
+/// <param name="Arrival">
+/// When the USB device last arrived (<c>DEVPKEY_Device_LastArrivalDate</c>, a <c>FILETIME</c>) — it changes when the
+/// keyboard is plugged in again, where the path and the device's instance ID stay the same; null where Windows doesn't
+/// tell (before Windows 10).
+/// </param>
 internal sealed record HidCollection(
     string Path,
     string DeviceKey,
@@ -33,7 +38,8 @@ internal sealed record HidCollection(
     ushort Usage,
     ushort InputReportByteLength,
     ushort OutputReportByteLength,
-    byte? OutputReportId);
+    byte? OutputReportId,
+    long? Arrival = null);
 
 /// <summary>The strings a USB device may carry; these keyboards carry none.</summary>
 internal readonly record struct DeviceStrings(string? Manufacturer, string? Product, string? SerialNumber);
@@ -44,8 +50,13 @@ internal readonly record struct DeviceStrings(string? Manufacturer, string? Prod
 internal sealed record HidCandidate(
     HidCollection Collection, KeyboardFamily Family, IReadOnlyList<HidCollection> Device)
 {
-    /// <summary>What stays the same while the keyboard is plugged in.</summary>
-    public string Entry => Collection.Path;
+    /// <summary>
+    /// What stays the same while the keyboard is plugged in: its path, and when it arrived — plugged into the same port
+    /// again between two looks, it has the same path, and the handle open on it is dead.
+    /// </summary>
+    public string Entry => Collection.Arrival is { } arrival
+        ? $"{Collection.Path}@{arrival.ToString(CultureInfo.InvariantCulture)}"
+        : Collection.Path;
 
     /// <summary>The keyboard it is on: its USB device, which Windows names after the port it is plugged into.</summary>
     public AttachedKeyboard Keyboard => new(Collection.DeviceKey, Collection.Usb, Collection.DeviceKey);

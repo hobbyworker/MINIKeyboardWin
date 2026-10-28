@@ -81,8 +81,11 @@ internal sealed class FakeConnection : IKeyboardConnectionRepository
     }
 }
 
+/// <summary>A keyboard whose reads and writes can be held (<see cref="Hold"/>) until the test lets them go.</summary>
 internal sealed class FakeDevice : IKeyboardDeviceRepository
 {
+    private Task gate = Task.CompletedTask;
+
     public KeyboardIdentity? Identity { get; set; }
 
     public Dictionary<ControlId, KeyAction> Actions { get; set; } = [];
@@ -96,24 +99,50 @@ internal sealed class FakeDevice : IKeyboardDeviceRepository
     public Task<KeyboardIdentity?> AskIdentityAsync(CancellationToken cancellation = default) =>
         Task.FromResult(Identity);
 
-    public Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
+    /// <summary>
+    /// Holds each read and write from now on until what this returns completes; each reads <see cref="Actions"/> as
+    /// they are when it is let go.
+    /// </summary>
+    public TaskCompletionSource Hold()
+    {
+        var held = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        gate = held.Task;
+        return held;
+    }
+
+    public async Task<IReadOnlyDictionary<ControlId, KeyAction>> ReadActionsAsync(
         int layer, RecordFormat format, KeyboardLayout layout, CancellationToken cancellation = default)
     {
         Reads++;
-        return Task.FromResult<IReadOnlyDictionary<ControlId, KeyAction>>(new Dictionary<ControlId, KeyAction>(Actions));
+        await gate.WaitAsync(cancellation);
+        return new Dictionary<ControlId, KeyAction>(Actions);
     }
 
     public Task<LayerLighting> ReadLightingAsync(int layer, CancellationToken cancellation = default) =>
         Task.FromResult<LayerLighting>(new LayerLighting.PerKey(0, KeyColor.DefaultKeyColors));
 
-    public Task WriteAsync(
+    public async Task WriteAsync(
         KeyboardConfiguration configuration, CommandSet commands, KeyboardLayout layout,
         CancellationToken cancellation = default)
     {
+        await gate.WaitAsync(cancellation);
         if (FailWrite is { } error)
             throw new KeyboardDeviceException(error);
         Writes.Add(configuration.Clone());
-        return Task.CompletedTask;
+    }
+}
+
+/// <summary>The simulator's switch, which only keeps what was chosen.</summary>
+internal sealed class FakeSources : IKeyboardSourceRepository
+{
+    public KeyboardSource Current { get; private set; } = KeyboardSource.Hardware;
+
+    public List<KeyboardSource> Selected { get; } = [];
+
+    public void Select(KeyboardSource source)
+    {
+        Selected.Add(source);
+        Current = source;
     }
 }
 
@@ -132,11 +161,13 @@ internal sealed class Fixture : IAsyncDisposable
     private readonly CancellationTokenSource stop;
     private readonly Task run;
 
-    private Fixture(FakeConnection connection, FakeDevice device, Profiles profiles, EditorModel editor)
+    private Fixture(
+        FakeConnection connection, FakeDevice device, Profiles profiles, FakeSources sources, EditorModel editor)
     {
         Connection = connection;
         Device = device;
         Profiles = profiles;
+        Sources = sources;
         Editor = editor;
         stop = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         run = editor.RunAsync(stop.Token);
@@ -148,6 +179,8 @@ internal sealed class Fixture : IAsyncDisposable
 
     public Profiles Profiles { get; }
 
+    public FakeSources Sources { get; }
+
     public EditorModel Editor { get; }
 
     /// <summary>A fixture whose device is set up by <paramref name="setUp"/> before the editor starts.</summary>
@@ -157,6 +190,7 @@ internal sealed class Fixture : IAsyncDisposable
         var device = new FakeDevice();
         setUp?.Invoke(device);
         var profiles = new Profiles();
+        var sources = new FakeSources();
         var editor = new EditorModel(new EditorDependencies
         {
             ObserveConnection = new ObserveConnectionUseCase(connection),
@@ -168,8 +202,9 @@ internal sealed class Fixture : IAsyncDisposable
             SaveKeyboard = new SaveKeyboardUseCase(device),
             ObserveAttachedKeyboards = new ObserveAttachedKeyboardsUseCase(connection),
             SelectKeyboard = new SelectKeyboardUseCase(connection),
+            KeyboardSource = new KeyboardSourceUseCase(sources),
         });
-        var fixture = new Fixture(connection, device, profiles, editor);
+        var fixture = new Fixture(connection, device, profiles, sources, editor);
         await fixture.SettleAsync();
         return fixture;
     }

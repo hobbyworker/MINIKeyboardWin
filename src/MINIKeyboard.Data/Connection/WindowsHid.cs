@@ -107,9 +107,10 @@ internal sealed unsafe class WindowsHid : IHidSystem
             if (HidP_GetCaps(preparsed, out var caps) != HidpStatusSuccess)
                 return null;
             var number = HidCollections.InterfaceNumber(path);
+            var device = UsbDevice(devInst, composite: number is not null);
             return new HidCollection(
                 path,
-                DeviceKey(devInst, composite: number is not null) ?? path,
+                device?.Key ?? path,
                 usb,
                 attributes.VersionNumber,
                 // A device that isn't composite has one interface: interface 0.
@@ -118,7 +119,8 @@ internal sealed unsafe class WindowsHid : IHidSystem
                 caps.Usage,
                 caps.InputReportByteLength,
                 caps.OutputReportByteLength,
-                OutputReportId(preparsed, caps));
+                OutputReportId(preparsed, caps),
+                device?.Arrival);
         }
         finally
         {
@@ -156,10 +158,10 @@ internal sealed unsafe class WindowsHid : IHidSystem
     }
 
     /// <summary>
-    /// The device instance ID of the USB device a collection belongs to. A collection's parent is its USB interface on
-    /// a composite device — whose parent is the device — and the device itself otherwise.
+    /// The USB device a collection belongs to: its device instance ID, and when it last arrived. A collection's parent
+    /// is its USB interface on a composite device — whose parent is the device — and the device itself otherwise.
     /// </summary>
-    private static string? DeviceKey(uint devInst, bool composite)
+    private static (string Key, long? Arrival)? UsbDevice(uint devInst, bool composite)
     {
         if (CM_Get_Parent(out var device, devInst, 0) != CrSuccess)
             return null;
@@ -172,6 +174,16 @@ internal sealed unsafe class WindowsHid : IHidSystem
             return null;
         var characters = new ReadOnlySpan<char>(buffer, length);
         var end = characters.IndexOf('\0');
-        return new string(end < 0 ? characters : characters[..end]);
+        return (new string(end < 0 ? characters : characters[..end]), LastArrival(device));
+    }
+
+    /// <summary>When a device node last arrived; null where Windows doesn't keep it.</summary>
+    private static long? LastArrival(uint device)
+    {
+        long arrival = 0;
+        var size = (uint)sizeof(long);
+        var found = CM_Get_DevNode_PropertyW(
+            device, DevicePropertyLastArrivalDate, out var type, (byte*)&arrival, ref size, 0) == CrSuccess;
+        return found && type == DevpropTypeFiletime && size == sizeof(long) ? arrival : null;
     }
 }

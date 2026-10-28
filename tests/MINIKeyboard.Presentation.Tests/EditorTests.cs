@@ -222,6 +222,219 @@ public class EditorTests
         Assert.Equal(["c"], fixture.Connection.Selected);
     }
 
+    /// <summary>
+    /// A read during which the keyboard went is dropped — what came after came from no keyboard, or another: the
+    /// keyboard keeps what it had, and the app says the keyboard went.
+    /// </summary>
+    [Fact]
+    public async Task AReadWhoseKeyboardWentIsDropped()
+    {
+        await using var fixture = await Fixture.CreateAsync(device =>
+        {
+            device.Identity = new KeyboardIdentity(6, 1, 10);
+            device.Actions = new() { [ControlId.Key(2)] = new KeyAction.Media(MediaKey.Mute) };
+        });
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        var held = fixture.Device.Hold();
+        var reading = editor.ReadAsync();
+        Assert.Equal(Activity.Reading, editor.Activity);
+        fixture.Device.Actions = new() { [ControlId.Key(2)] = new KeyAction.Media(MediaKey.VolumeUp) };
+        await fixture.SendAsync(ConnectionState.Searching);
+        held.SetResult();
+        await reading;
+        Assert.Null(editor.Activity);
+        Assert.Equal(new Notice.KeyboardGone(), editor.Notice);
+        Assert.Equal(
+            new ActionCaption.Media(MediaChoice.Mute), Control(editor.Drawing!, ControlRef.Key(2)).Caption);
+    }
+
+    /// <summary>
+    /// Another keyboard with the same USB ID in place of the one being read: the read is dropped, and the new
+    /// keyboard — whose identification waited for it — is identified, and read, once it ends.
+    /// </summary>
+    [Fact]
+    public async Task TheKeyboardThatCameDuringAReadIsIdentifiedAfterIt()
+    {
+        await using var fixture = await Fixture.CreateAsync(device => device.Identity = new KeyboardIdentity(6, 1, 10));
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        var device = fixture.Device;
+        var held = device.Hold();
+        var reading = editor.ReadAsync();
+        device.Identity = new KeyboardIdentity(3, 1, 10);
+        device.Actions = new() { [ControlId.Key(2)] = new KeyAction.Media(MediaKey.Mute) };
+        await fixture.SendAsync(ConnectionState.Searching);
+        await fixture.PlugAsync(K8840());
+        Assert.Equal(Activity.Reading, editor.Activity);
+        Assert.Equal(new ConnectionStatus.Connected("1189:8840", null, null, false, false), editor.Status);
+
+        held.SetResult();
+        await reading;
+        Assert.Equal(new Notice.KeyboardGone(), editor.Notice);
+        Assert.True(editor.IsReady);
+        Assert.Equal(new ConnectionStatus.Connected("1189:8840", 3, 1, true, false), editor.Status);
+        Assert.Equal(
+            new ActionCaption.Media(MediaChoice.Mute), Control(editor.Drawing!, ControlRef.Key(2)).Caption);
+    }
+
+    /// <summary>
+    /// A save during which the keyboard went says so, and the changes stay unsaved — what reached which keyboard isn't
+    /// known.
+    /// </summary>
+    [Fact]
+    public async Task ASaveWhoseKeyboardWentStaysUnsaved()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.PlugAsync(K8890());
+        var editor = fixture.Editor;
+        editor.SetLightingMode(1);
+        var held = fixture.Device.Hold();
+        var saving = editor.SaveAsync();
+        Assert.Equal(Activity.Saving, editor.Activity);
+        await fixture.SendAsync(ConnectionState.Searching);
+        held.SetResult();
+        await saving;
+        Assert.Null(editor.Activity);
+        Assert.Equal(new Notice.KeyboardGone(), editor.Notice);
+        Assert.True(editor.HasUnsavedChanges);
+    }
+
+    /// <summary>Another keyboard can be chosen, but not while a transfer is under way.</summary>
+    [Fact]
+    public async Task CanSwitchKeyboardFollowsTheActivity()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var editor = fixture.Editor;
+        Assert.True(editor.CanSwitchKeyboard);
+        await fixture.PlugAsync(K8890());
+        Assert.True(editor.CanSwitchKeyboard);
+        editor.SetLightingMode(1);
+        var held = fixture.Device.Hold();
+        var saving = editor.SaveAsync();
+        Assert.False(editor.CanSwitchKeyboard);
+        held.SetResult();
+        await saving;
+        Assert.Equal(new Notice.Saved(), editor.Notice);
+        Assert.True(editor.CanSwitchKeyboard);
+    }
+
+    /// <summary>While the keyboard is being read, choosing another — plugged in or simulated — does nothing.</summary>
+    [Fact]
+    public async Task NoOtherKeyboardWhileReading()
+    {
+        await using var fixture = await Fixture.CreateAsync(device => device.Identity = new KeyboardIdentity(6, 1, 10));
+        await fixture.SendAsync(new AttachedKeyboards([new("a", K8840().Usb, "1"), new("b", K8840().Usb, "2")], "a"));
+        await fixture.PlugAsync(K8840());
+        var editor = fixture.Editor;
+        var held = fixture.Device.Hold();
+        var reading = editor.ReadAsync();
+        Assert.False(editor.CanSwitchKeyboard);
+        editor.SelectKeyboard("b");
+        editor.SelectSimulator("8890-3");
+        Assert.Empty(fixture.Connection.Selected);
+        Assert.Empty(fixture.Sources.Selected);
+        Assert.Null(editor.PendingSwitch);
+        Assert.Null(editor.ActiveSimulatorId);
+
+        held.SetResult();
+        await reading;
+        Assert.Equal(new Notice.ReadComplete(), editor.Notice);
+        editor.SelectKeyboard("b");
+        Assert.Equal(["b"], fixture.Connection.Selected);
+    }
+
+    /// <summary>
+    /// With changes not saved, choosing another keyboard — plugged in or simulated — asks first. Cancelled, the
+    /// keyboard and its changes stay; confirmed, the switch is made. When the keyboard goes meanwhile, there is nothing
+    /// to ask.
+    /// </summary>
+    [Fact]
+    public async Task SwitchingWithUnsavedChangesAsksFirst()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SendAsync(new AttachedKeyboards([new("a", K8890().Usb, "1"), new("b", K8890().Usb, "2")], "a"));
+        await fixture.PlugAsync(K8890());
+        var editor = fixture.Editor;
+        editor.SetLightingMode(1);
+
+        editor.SelectKeyboard("b");
+        Assert.Equal(new KeyboardSwitch.Keyboard("b"), editor.PendingSwitch);
+        Assert.Empty(fixture.Connection.Selected);
+        editor.CancelSwitch();
+        Assert.Null(editor.PendingSwitch);
+        Assert.Empty(fixture.Connection.Selected);
+        Assert.True(editor.IsReady);
+        Assert.True(editor.HasUnsavedChanges);
+        editor.SelectKeyboard("b");
+        editor.ConfirmSwitch();
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal(["b"], fixture.Connection.Selected);
+
+        editor.SelectSimulator("8890-3");
+        Assert.Equal(new KeyboardSwitch.Simulator("8890-3"), editor.PendingSwitch);
+        editor.CancelSwitch();
+        Assert.Empty(fixture.Sources.Selected);
+        Assert.Null(editor.ActiveSimulatorId);
+        editor.SelectSimulator("8890-3");
+        editor.ConfirmSwitch();
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal("8890-3", editor.ActiveSimulatorId);
+        var simulated = Assert.IsType<KeyboardSource.Simulated>(Assert.Single(fixture.Sources.Selected));
+        Assert.Equal("8890-3", simulated.Model.Id);
+
+        editor.SelectSimulator(null);
+        Assert.Equal(new KeyboardSwitch.Simulator(null), editor.PendingSwitch);
+        await fixture.SendAsync(ConnectionState.Searching);
+        Assert.Null(editor.PendingSwitch);
+    }
+
+    /// <summary>Without changes to lose, the switch is made at once; to where the app already is, none.</summary>
+    [Fact]
+    public async Task WithoutUnsavedChangesThereIsNoQuestion()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SendAsync(new AttachedKeyboards([new("a", K8890().Usb, "1"), new("b", K8890().Usb, "2")], "a"));
+        await fixture.PlugAsync(K8890());
+        var editor = fixture.Editor;
+        editor.SelectKeyboard("a");
+        editor.SelectSimulator(null);
+        Assert.Empty(fixture.Connection.Selected);
+        Assert.Empty(fixture.Sources.Selected);
+
+        editor.SelectKeyboard("b");
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal(["b"], fixture.Connection.Selected);
+        editor.SelectSimulator("8890-3");
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal("8890-3", editor.ActiveSimulatorId);
+        editor.ConfirmSwitch();
+        Assert.Single(fixture.Sources.Selected);
+    }
+
+    /// <summary>
+    /// Once the keyboard has gone, its changes can't be saved anywhere: choosing another — plugged in or simulated —
+    /// doesn't ask.
+    /// </summary>
+    [Fact]
+    public async Task UnpluggedWithChangesThereIsNoQuestion()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SendAsync(new AttachedKeyboards([new("a", K8890().Usb, "1"), new("b", K8890().Usb, "2")], "a"));
+        await fixture.PlugAsync(K8890());
+        var editor = fixture.Editor;
+        editor.SetLightingMode(1);
+        await fixture.SendAsync(ConnectionState.Searching);
+        Assert.True(editor.HasUnsavedChanges);
+
+        editor.SelectKeyboard("b");
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal(["b"], fixture.Connection.Selected);
+        editor.SelectSimulator("8890-3");
+        Assert.Null(editor.PendingSwitch);
+        Assert.Equal("8890-3", editor.ActiveSimulatorId);
+    }
+
     /// <summary>A 884x keyboard that doesn't answer picks one of the app's layouts; rotating turns the drawing.</summary>
     [Fact]
     public async Task TheLayoutSheet()

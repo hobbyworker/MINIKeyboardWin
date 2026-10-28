@@ -356,6 +356,41 @@ public class ConnectionTests
     }
 
     /// <summary>
+    /// Plugged into the same port again between two looks, a keyboard has the same path but a new arrival: the watcher
+    /// lets go of the handle it had, which is dead, and opens the keyboard again. Where Windows doesn't tell the
+    /// arrival, the path alone is the entry.
+    /// </summary>
+    [Fact]
+    public async Task AKeyboardPluggedInAgainIsOpenedAgain()
+    {
+        static List<HidCollection> Arrived(long arrival) =>
+            [.. K8890().Select(collection => collection with { Arrival = arrival })];
+        var plain = HidCollections.Candidates(K8890())[0];
+        Assert.Equal(plain.Collection.Path, plain.Entry);
+        Assert.NotEqual(HidCollections.Candidates(Arrived(1))[0].Entry, HidCollections.Candidates(Arrived(2))[0].Entry);
+
+        var hid = new FakeHid();
+        hid.Plugged.AddRange(Arrived(1));
+        var (watcher, state, log) = Watcher(hid);
+        watcher.Refresh();
+        var first = watcher.OpenChannel()!;
+        watcher.Refresh();
+        Assert.Single(hid.Opened);
+
+        hid.Plugged.Clear();
+        hid.Plugged.AddRange(Arrived(2));
+        watcher.Refresh();
+        Assert.Equal(2, hid.Opened.Count);
+        Assert.NotSame(first, watcher.OpenChannel());
+        Assert.IsType<ConnectionState.Connected>(state.Value);
+        Assert.Equal(
+            [typeof(DeviceLogEvent.Connected), typeof(DeviceLogEvent.Searching), typeof(DeviceLogEvent.Connected)],
+            log.Snapshot().Select(entry => Assert.IsType<LogContent.Event>(entry.Content).What.GetType()));
+        var closed = await Assert.ThrowsAsync<KeyboardDeviceException>(() => first.WriteAsync([3], Cancellation));
+        Assert.IsType<KeyboardDeviceError.NotConnected>(closed.Error);
+    }
+
+    /// <summary>
     /// A keyboard that didn't open isn't tried again — its failure shown — until it is re-plugged or retried.
     /// </summary>
     [Fact]

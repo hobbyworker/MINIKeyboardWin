@@ -39,6 +39,12 @@ public sealed partial class MainWindow : Window
     private readonly InfoBar notice = new() { IsClosable = true, IsOpen = false };
     private readonly Border noticeHolder;
     private readonly Border simulatorBar;
+    private readonly Button simulatorBack = new()
+    {
+        Content = T("Back to the Keyboard on USB"),
+        VerticalAlignment = VerticalAlignment.Center,
+    };
+    private MenuFlyoutSubItem? simulatorMenu;
     private readonly UpdateBar? updateBar;
     private readonly ActionPanel panel;
     private readonly Inspector inspector;
@@ -47,6 +53,7 @@ public sealed partial class MainWindow : Window
     private readonly List<(string Command, MenuFlyoutItem Item)> menuItems = [];
     private readonly List<(string? Id, RadioMenuFlyoutItem Item)> simulatorItems = [];
     private LayoutDialog? layoutDialog;
+    private ContentDialog? switchDialog;
     private ulong shownNotice;
     private DispatcherQueueTimer? noticeTimer;
 
@@ -231,8 +238,9 @@ public sealed partial class MainWindow : Window
         menu.Add(MenuItem(T("Device Log"), Glyphs.Log, "device-log", "Ctrl+Alt+L"));
         if (editor.CanSelectSource)
         {
+            simulatorMenu = SimulatorMenu();
             menu.Add(new MenuFlyoutSeparator());
-            menu.Add(SimulatorMenu());
+            menu.Add(simulatorMenu);
         }
         menu.Add(new MenuFlyoutSeparator());
         menu.Add(MenuItem(T("Settings"), "", "settings", "Ctrl+,"));
@@ -301,17 +309,16 @@ public sealed partial class MainWindow : Window
             Foreground = white,
             TextWrapping = TextWrapping.Wrap,
         });
-        var back = new Button { Content = T("Back to the Keyboard on USB"), VerticalAlignment = VerticalAlignment.Center };
-        back.Click += (_, _) => Editor.SelectSimulator(null);
+        simulatorBack.Click += (_, _) => Editor.SelectSimulator(null);
         var row = new Grid { ColumnSpacing = 14 };
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         Grid.SetColumn(texts, 1);
-        Grid.SetColumn(back, 2);
+        Grid.SetColumn(simulatorBack, 2);
         row.Children.Add(icon);
         row.Children.Add(texts);
-        row.Children.Add(back);
+        row.Children.Add(simulatorBack);
         return new Border
         {
             Background = new SolidColorBrush(KeyboardCanvas.SimulatorOrange),
@@ -445,6 +452,7 @@ public sealed partial class MainWindow : Window
         UpdateCommands();
         UpdateNotice();
         UpdateLayoutDialog();
+        UpdateSwitchDialog();
     }
 
     private void UpdateCommands()
@@ -457,6 +465,10 @@ public sealed partial class MainWindow : Window
         var active = Editor.ActiveSimulatorId;
         foreach (var (id, item) in simulatorItems)
             item.IsChecked = id == active;
+        var canSwitch = Editor.CanSwitchKeyboard;
+        if (simulatorMenu is not null)
+            simulatorMenu.IsEnabled = canSwitch;
+        simulatorBack.IsEnabled = canSwitch;
     }
 
     /// <summary>A message that comes and goes, over the top of the keyboard.</summary>
@@ -522,5 +534,43 @@ public sealed partial class MainWindow : Window
         layoutDialog = null;
         if (Editor.IsChoosingLayout)
             Editor.SetChoosingLayout(false);
+    }
+
+    /// <summary>
+    /// Before a switch to another keyboard loses changes not saved, the question — up while the editor has the switch
+    /// waiting.
+    /// </summary>
+    private void UpdateSwitchDialog()
+    {
+        var pending = Editor.PendingSwitch;
+        if (pending is not null && switchDialog is null)
+        {
+            var dialog = DialogHost.Create();
+            dialog.Title = T("Switch Keyboards?");
+            dialog.Content = Ui.Text(T("Changes you haven’t saved will be lost."), wrap: true);
+            dialog.PrimaryButtonText = T("Switch");
+            dialog.CloseButtonText = T("Cancel");
+            dialog.DefaultButton = ContentDialogButton.Close;
+            switchDialog = dialog;
+            _ = AskSwitchAsync(dialog);
+        }
+        else if (pending is null && switchDialog is { } open)
+        {
+            switchDialog = null;
+            open.Hide();
+        }
+    }
+
+    private async Task AskSwitchAsync(ContentDialog dialog)
+    {
+        var result = await dialogs.ShowAsync(dialog, () => switchDialog == dialog);
+        if (switchDialog != dialog)
+            return;
+        // Answered from the dialog: switch, or stay — Escape stays.
+        switchDialog = null;
+        if (result == ContentDialogResult.Primary)
+            Editor.ConfirmSwitch();
+        else
+            Editor.CancelSwitch();
     }
 }

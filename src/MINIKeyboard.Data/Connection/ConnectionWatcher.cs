@@ -4,9 +4,10 @@ namespace MINIKeyboard.Data.Connection;
 
 /// <summary>
 /// The connection's work, done on its thread: looks at the keyboards plugged in, opens the chosen one's configuration
-/// collection (<see cref="KeyboardChoice"/>), and lets go when it is unplugged. A keyboard that didn't open is left
-/// alone — and its failure stays on screen — until it is plugged in again or the user retries. The others are left
-/// alone too, so another app can have them.
+/// collection (<see cref="KeyboardChoice"/>), and lets go when it is unplugged — or plugged in again since it last
+/// looked, which opens it anew (<see cref="HidCandidate.Entry"/>). A keyboard that didn't open is left alone — and its
+/// failure stays on screen — until it is plugged in again or the user retries. The others are left alone too, so
+/// another app can have them.
 /// </summary>
 /// <param name="selectedKeyboard">Where the keyboard chosen last time is kept; null keeps nothing.</param>
 internal sealed class ConnectionWatcher(

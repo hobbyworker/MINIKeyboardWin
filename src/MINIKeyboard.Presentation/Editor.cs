@@ -49,6 +49,16 @@ internal sealed class EditorState
 
     public ConnectionState Connection { get; set; } = ConnectionState.Searching;
 
+    /// <summary>
+    /// Counts up each time the connection goes to another keyboard, or to none — so work that waited on the keyboard
+    /// can tell, when it ends, whether it is still the one it started on. Two keyboards with the same USB ID compare
+    /// equal; this tells them apart.
+    /// </summary>
+    public ulong ConnectionSerial { get; set; }
+
+    /// <summary>A switch to another keyboard that waits for the user to agree to lose the changes not saved.</summary>
+    public KeyboardSwitch? PendingSwitch { get; set; }
+
     public KeyboardIdentification? Identification { get; set; }
 
     public ResolvedLayout? ResolvedLayout { get; set; }
@@ -244,6 +254,17 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
 
     public bool HasUnsavedChanges => state.Configuration.HasUnsavedChanges;
 
+    /// <summary>
+    /// Whether another keyboard — on USB or simulated — can be chosen: not while a transfer is under way.
+    /// </summary>
+    public bool CanSwitchKeyboard => state.Activity is null;
+
+    /// <summary>
+    /// A switch the user asked for that would lose changes not saved, waiting for them to agree
+    /// (<see cref="ConfirmSwitch"/>) or not (<see cref="CancelSwitch"/>); null when none waits.
+    /// </summary>
+    public KeyboardSwitch? PendingSwitch => state.PendingSwitch;
+
     // Connection
 
     private async Task ConnectionChangedAsync(ConnectionState connection)
@@ -254,6 +275,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             state.Connection = connection;
             if (state.Keyboard == previous)
                 return false;
+            state.ConnectionSerial++;
+            state.PendingSwitch = null;
             state.Identification = null;
             state.Selection = null;
             state.Held = Modifiers.None;
@@ -271,21 +294,94 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
 
     public void RetryConnection() => dependencies.RetryConnection.Execute();
 
-    /// <summary>Opens another of the keyboards plugged in. The connection reports "searching" first, as after re-plugging.</summary>
-    public void SelectKeyboard(string id) => dependencies.SelectKeyboard?.Execute(id);
+    /// <summary>
+    /// Opens another of the keyboards plugged in. The connection reports "searching" first, as after re-plugging. Not
+    /// while a transfer is under way; with changes not saved to the keyboard connected, once the user agrees
+    /// (<see cref="PendingSwitch"/>).
+    /// </summary>
+    public void SelectKeyboard(string id)
+    {
+        if (dependencies.SelectKeyboard is null || !CanSwitchKeyboard || id == state.Attached.Selected)
+            return;
+        Switch(new KeyboardSwitch.Keyboard(id));
+    }
+
+    /// <summary>Does the switch that waited, losing the changes not saved.</summary>
+    public void ConfirmSwitch()
+    {
+        if (state.PendingSwitch is not { } pending)
+            return;
+        Update(state => state.PendingSwitch = null);
+        if (CanSwitchKeyboard)
+            Perform(pending);
+    }
+
+    /// <summary>Forgets the switch that waited: the keyboard and its changes stay.</summary>
+    public void CancelSwitch() => Update(state => state.PendingSwitch = null);
+
+    /// <summary>
+    /// Switches now — or, with changes not saved that the keyboard connected could still take, keeps the switch until
+    /// the user says. Once the keyboard has gone, or none opened, its changes can't be saved anywhere: nothing to ask.
+    /// </summary>
+    private void Switch(KeyboardSwitch next)
+    {
+        if (state.Configuration.HasUnsavedChanges && state.Keyboard is not null && state.Identification is not null)
+            Update(state => state.PendingSwitch = next);
+        else
+            Perform(next);
+    }
+
+    private void Perform(KeyboardSwitch next)
+    {
+        switch (next)
+        {
+            case KeyboardSwitch.Keyboard { Id: var id }:
+                dependencies.SelectKeyboard?.Execute(id);
+                break;
+            case KeyboardSwitch.Simulator { Id: var id }
+                when dependencies.KeyboardSource is { } keyboardSource && SourceNamed(id) is { } selected:
+                keyboardSource.Select(selected);
+                Update(state => state.KeyboardSource = selected);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// After work that began with the keyboard connected as <paramref name="serial"/>: when the connection has gone to
+    /// another keyboard since, or to none, ends the work without what it brought, says the keyboard went, and
+    /// identifies the keyboard connected now — its identification waited for the work. True when it had.
+    /// </summary>
+    private async Task<bool> KeyboardChangedAsync(ulong serial)
+    {
+        if (state.ConnectionSerial == serial)
+            return false;
+        Update(state =>
+        {
+            state.Activity = null;
+            state.Show(new Notice.KeyboardGone());
+        });
+        await IdentifyAsync();
+        return true;
+    }
 
     /// <summary>Settles the keyboard's commands and layout, then reads it if it reads back on its own.</summary>
     public async Task IdentifyAsync()
     {
         if (state.Keyboard is not { } keyboard || state.Identification is not null || state.Activity is not null)
             return;
+        var serial = state.ConnectionSerial;
         Update(state => state.Activity = ActivityKind.Identifying);
-        KeyboardIdentification identified;
+        KeyboardIdentification? identified = null;
         try
         {
             identified = await dependencies.IdentifyKeyboard.ExecuteAsync(keyboard);
         }
         catch (KeyboardDeviceException)
+        {
+        }
+        if (await KeyboardChangedAsync(serial))
+            return;
+        if (identified is null)
         {
             Update(state =>
             {
@@ -297,8 +393,6 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
         var readNow = Update(state =>
         {
             state.Activity = null;
-            if (state.Keyboard != keyboard)
-                return false;
             state.Identification = identified;
             var capabilities = new KeyboardCapabilities(identified.Commands);
             var resolved = dependencies.ResolveLayout.Execute(keyboard, identified);
@@ -324,9 +418,12 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             return;
         if (!(state.IsReady && state.ReadsBack))
             return;
+        var serial = state.ConnectionSerial;
         var configuration = state.Configuration.Clone();
         Update(state => state.Activity = ActivityKind.Reading);
         var outcome = await dependencies.ReadKeyboard.ExecuteAsync(configuration, capabilities, resolved.Layout);
+        if (await KeyboardChangedAsync(serial))
+            return;
         Update(state =>
         {
             state.Activity = null;
@@ -348,6 +445,7 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
             Update(state => state.Show(new Notice.NothingToSave()));
             return;
         }
+        var serial = state.ConnectionSerial;
         Update(state => state.Activity = ActivityKind.Saving);
         SaveOutcome? outcome = null;
         KeyboardDeviceError? error = null;
@@ -359,6 +457,8 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
         {
             error = exception.Error;
         }
+        if (await KeyboardChangedAsync(serial))
+            return;
         Update(state =>
         {
             state.Activity = null;
@@ -523,23 +623,26 @@ public sealed partial class EditorModel(EditorDependencies dependencies)
 
     /// <summary>
     /// Switches to a simulated keyboard, or with null to the keyboard on USB. The switch reports "searching" first, so
-    /// the window starts over as after re-plugging.
+    /// the window starts over as after re-plugging. Not while a transfer is under way; with changes not saved to the
+    /// keyboard connected, once the user agrees (<see cref="PendingSwitch"/>).
     /// </summary>
     public void SelectSimulator(string? id)
     {
-        if (dependencies.KeyboardSource is not { } keyboardSource)
+        if (dependencies.KeyboardSource is null || !CanSwitchKeyboard)
             return;
-        KeyboardSource selected;
+        if (SourceNamed(id) is not { } selected || selected == state.KeyboardSource)
+            return;
+        Switch(new KeyboardSwitch.Simulator(id));
+    }
+
+    /// <summary>The simulated keyboard <paramref name="id"/> names, or with null the keyboard on USB.</summary>
+    private static KeyboardSource? SourceNamed(string? id)
+    {
         if (id is null)
-            selected = KeyboardSource.Hardware;
-        else if (SimulatedModel.All().FirstOrDefault(model => model.Id == id) is { } model)
-            selected = new KeyboardSource.Simulated(model);
-        else
-            return;
-        if (selected == state.KeyboardSource)
-            return;
-        keyboardSource.Select(selected);
-        Update(state => state.KeyboardSource = selected);
+            return KeyboardSource.Hardware;
+        return SimulatedModel.All().FirstOrDefault(model => model.Id == id) is { } model
+            ? new KeyboardSource.Simulated(model)
+            : null;
     }
 
     // Notices

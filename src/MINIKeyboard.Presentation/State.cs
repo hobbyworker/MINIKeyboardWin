@@ -26,6 +26,18 @@ public enum Activity
     Saving,
 }
 
+/// <summary>A switch to another keyboard the user asked for.</summary>
+public abstract record KeyboardSwitch
+{
+    private KeyboardSwitch() { }
+
+    /// <summary>To another of the keyboards plugged in.</summary>
+    public sealed record Keyboard(string Id) : KeyboardSwitch;
+
+    /// <summary>To a simulated keyboard, or with a null <paramref name="Id"/> to the keyboard on USB.</summary>
+    public sealed record Simulator(string? Id) : KeyboardSwitch;
+}
+
 /// <summary>A message that comes and goes.</summary>
 public abstract record Notice
 {
