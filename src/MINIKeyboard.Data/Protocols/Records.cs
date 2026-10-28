@@ -90,6 +90,8 @@ public static class Records
                 break;
             case KeyAction.Mouse { Action: var mouse }:
                 record[3] = (byte)Kind.Mouse;
+                // 1 for a mouse action; the cross-platform app's 2025-06 builds put 4 here for a gesture.
+                record[4] = 1;
                 record[5] = 4;
                 record[8] = ModifierCodes(mouse.Modifiers()).FirstOrDefault();
                 record[11] = mouse.Buttons();
@@ -229,6 +231,9 @@ public static class Records
                         : (ushort)(At(record, 10) | At(record, 11) << 8);
                     return usage == 0 ? KeyAction.Unassigned : new KeyAction.Media(new MediaKey(usage));
                 }
+            // A gesture (4 in byte 4), which the app doesn't make, isn't read as a mouse action.
+            case Kind.Mouse when standard && At(record, 4) == 4:
+                return null;
             case Kind.Mouse when standard:
                 return Mouse(At(record, 11), At(record, 20), ModifiersOfCode(At(record, 8)) ?? Modifiers.None);
             case Kind.Mouse:

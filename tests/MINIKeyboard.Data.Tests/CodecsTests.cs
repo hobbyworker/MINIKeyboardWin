@@ -117,8 +117,11 @@ public class CodecsTests
         Assert.True(media[3] == 2 && media[5] == 2 && media[8] == 0x24 && media[11] == 0x02);
         Assert.Equal(new KeyAction.Media(MediaKey.WebBack), Records.Decode(media, RecordFormat.Standard));
         var mouse = Records.Standard(new KeyAction.Mouse(MouseAction.ControlWheelUp), 1, 0);
-        Assert.True(mouse[3] == 3 && mouse[5] == 4 && mouse[8] == 0xF1 && mouse[11] == 0 && mouse[20] == 0x01);
+        Assert.True(mouse[3] == 3 && mouse[4] == 1 && mouse[5] == 4 && mouse[8] == 0xF1 && mouse[11] == 0 && mouse[20] == 0x01);
         Assert.Equal(new KeyAction.Mouse(MouseAction.ControlWheelUp), Records.Decode(mouse, RecordFormat.Standard));
+        byte[] gesture = [.. mouse];
+        gesture[4] = 4;
+        Assert.Null(Records.Decode(gesture, RecordFormat.Standard));
     }
 
     [Fact]
