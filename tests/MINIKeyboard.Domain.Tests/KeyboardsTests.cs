@@ -31,6 +31,7 @@ public class KeyboardsTests
     public void IdentityPicksTheRecordFormat()
     {
         Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(6, 1, 10).RecordFormat);
+        Assert.Equal(RecordFormat.Standard, new KeyboardIdentity(12, 2, 11).RecordFormat);
         Assert.Equal(RecordFormat.Legacy, new KeyboardIdentity(6, 1, 0).RecordFormat);
         Assert.Equal(RecordFormat.Legacy, new KeyboardIdentity(6, 1, 1).RecordFormat);
     }

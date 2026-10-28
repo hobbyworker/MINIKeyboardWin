@@ -103,12 +103,13 @@ public abstract record CommandSet
 
 /// <summary>What a 884x keyboard answers when asked who it is (<c>FB FB FB</c>).</summary>
 /// <param name="Kind">
-/// 10 for the standard record format, anything else for the legacy one. On a keyboard of four keys and a knob it
-/// also picks between two layouts.
+/// 10 for the standard record format — and 11, a twelve-key keyboard (514C:8850) that stores and reads standard
+/// records though the cross-platform app takes it for legacy — anything else for the legacy one. On a keyboard of four
+/// keys and a knob it also picks between two layouts.
 /// </param>
 public readonly record struct KeyboardIdentity(byte KeyCount, byte KnobCount, byte Kind)
 {
-    public RecordFormat RecordFormat => Kind == 10 ? RecordFormat.Standard : RecordFormat.Legacy;
+    public RecordFormat RecordFormat => Kind is 10 or 11 ? RecordFormat.Standard : RecordFormat.Legacy;
 }
 
 /// <summary>What the app learned about a keyboard once it was connected.</summary>
