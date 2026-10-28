@@ -158,13 +158,15 @@ Standarnya adalah nol peringatan. Peringatan diperbaiki, bukan dimatikan.
 
 ## Batasan
 
-- Sejauh ini, penulisan baru diperiksa pada satu papan ketik, yaitu `1189:8890` dengan 6 tombol dan 1 kenop, di
-  Windows 11, baik pada PC ARM64 maupun x64. Penulisan belum diperiksa di Windows 10. Papan ketik lainnya ditulis persis
-  seperti cara aplikasi produsennya menulis — perintahnya sama dengan milik aplikasi macOS sampai ke byte-nya, dan tes
-  menjaganya — tetapi belum ada satu pun yang diperiksa langsung pada perangkatnya.
+- Sejauh ini, penulisan sudah diperiksa pada dua papan ketik di Windows 11: `1189:8890` dengan 6 tombol dan 1 kenop,
+  baik pada PC ARM64 maupun x64, dan `514C:8850` dengan 12 tombol dan 2 kenop, dengan firmware baru, pada ARM64.
+  Penulisan belum diperiksa di Windows 10. Papan ketik lainnya ditulis persis seperti cara aplikasi produsennya
+  menulis — perintahnya sama dengan milik aplikasi macOS sampai ke byte-nya, dan tes menjaganya — tetapi belum ada
+  satu pun yang diperiksa langsung pada perangkatnya.
 - `1189:8890` dan papan ketik yang tidak memberi tahu jenisnya tidak melaporkan pengaturan saat ini, jadi yang terlihat
   hanya apa yang diatur di aplikasi.
-- Hanya satu papan ketik dalam satu waktu. Jika beberapa papan ketik tercolok, aplikasi memakai yang pertama ditemukan —
+- Hanya satu papan ketik yang dibuka dalam satu waktu. Jika beberapa papan ketik tercolok, tombol di samping status
+  sambungan memilih yang mana; aplikasi membuka yang terakhir dipilih, atau jika tidak ada, yang pertama ditemukan —
   `1189:8890` didahulukan.
 - Gerakan dan seret tetikus tidak tersedia.
 

@@ -149,12 +149,14 @@ Zero warnings is the bar. Warnings are fixed, not switched off.
 
 ## Limitations
 
-- Writing has been tried on one keyboard so far, a `1189:8890` with six keys and a knob, on Windows 11, on both
-  ARM64 and x64 PCs. It hasn't been tried on Windows 10 yet. The other keyboards are written as their vendor's app writes
-  them — the commands are the macOS app's, byte for byte, and tests pin them — but none has been tried yet.
+- Writing has been tried on two keyboards so far, on Windows 11: a `1189:8890` with six keys and a knob, on both ARM64
+  and x64 PCs, and a `514C:8850` with twelve keys and two knobs, on newer firmware, on ARM64. It hasn't been tried on
+  Windows 10 yet. The other keyboards are written as their vendor's app writes them — the commands are the macOS
+  app's, byte for byte, and tests pin them — but none has been tried yet.
 - The `1189:8890`, and keyboards that don't say what they are, can't report their settings, so the app shows only
   what was set in it.
-- One keyboard at a time. With several plugged in, the app takes the first it finds, a `1189:8890` first.
+- One keyboard is open at a time. With several plugged in, the button beside the connection status chooses which; the
+  app opens the one chosen last time, or else the first it finds, a `1189:8890` first.
 - Mouse movement and dragging are not offered.
 
 ## License
