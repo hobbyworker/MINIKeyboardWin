@@ -14,7 +14,14 @@ public static class Strings
 {
     /// <summary>The languages there is a table for; English is the source and needs none.</summary>
     private static readonly string[] Translated =
-        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "ru", "id", "vi", "th"];
+        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "es-419", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "ru", "id", "vi", "th"];
+
+    /// <summary>The regions whose Spanish is Latin America's: Latin America itself (419), its countries and the US.</summary>
+    private static readonly HashSet<string> LatinAmericanSpanish =
+    [
+        "419", "AR", "BO", "BR", "BZ", "CL", "CO", "CR", "CU", "DO", "EC", "GT", "HN", "MX", "NI", "PA", "PE", "PR", "PY", "SV",
+        "US", "UY", "VE",
+    ];
 
     private static IReadOnlyDictionary<string, string> table = new Dictionary<string, string>();
 
@@ -36,6 +43,7 @@ public static class Strings
         "zh-Hans" => "zh-CN",
         "zh-Hant" => "zh-TW",
         "es" => "es-ES",
+        "es-419" => "es-MX",
         "fr" => "fr-FR",
         "de" => "de-DE",
         "it" => "it-IT",
@@ -64,9 +72,9 @@ public static class Strings
     private static string Translate(string message) => table.TryGetValue(message, out var text) ? text : message;
 
     /// <summary>
-    /// The table for a language tag as Windows or the user gives it ("ko-KR", "zh-TW", "pt-AO", "zh-Hans") — Chinese by
-    /// its script or region, Portuguese as Brazil's in Brazil and Portugal's anywhere else, any other by its language;
-    /// "en" when there is none.
+    /// The table for a language tag as Windows or the user gives it ("ko-KR", "zh-TW", "pt-AO", "zh-Hans", "es-MX") —
+    /// Chinese by its script or region, Portuguese as Brazil's in Brazil and Portugal's anywhere else, Spanish as Latin
+    /// America's there and in the US and Spain's anywhere else, any other by its language; "en" when there is none.
     /// </summary>
     private static string Match(string tag)
     {
@@ -80,6 +88,8 @@ public static class Strings
         }
         if (language == "pt")
             return parts.Skip(1).Any(part => part.Equals("BR", StringComparison.OrdinalIgnoreCase)) ? "pt-BR" : "pt-PT";
+        if (language == "es")
+            return parts.Skip(1).Any(part => LatinAmericanSpanish.Contains(part.ToUpperInvariant())) ? "es-419" : "es";
         return Translated.Contains(language) ? language : "en";
     }
 
