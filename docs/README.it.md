@@ -9,7 +9,7 @@
   <a href="../LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"></a>
 </p>
 
-<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <b>Italiano</b> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
+<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <b>Italiano</b> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.ru.md">Русский</a> · <a href="README.th.md">ไทย</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
 
 Un’app per Windows che scrive le impostazioni dei tasti su piccole tastiere macro USB – quelle in commercio che vanno
 da una sola manopola fino a 21 tasti, con al massimo quattro manopole. Per ogni azione di un tasto o di una manopola
@@ -34,9 +34,9 @@ quella che scegli tu. L’app del produttore non conosce la `1189:8890` e il suo
 forma, quindi la sua forma reale non è nota: indichi all’app quanti tasti e manopole ha e quanti tasti ci sono in una
 riga, e l’app ne disegna una disposizione ordinata.
 
-L’app è disponibile in 14 lingue – inglese, coreano, giapponese, cinese (semplificato e tradizionale), tedesco,
-spagnolo, francese, italiano, portoghese (Brasile e Portogallo), polacco, indonesiano e vietnamita – e segue la lingua di Windows (o
-quella che scegli nelle Impostazioni). Nelle altre lingue appare in inglese.
+L’app è disponibile in 16 lingue – inglese, coreano, giapponese, cinese (semplificato e tradizionale), tedesco,
+spagnolo, francese, italiano, portoghese (Brasile e Portogallo), polacco, russo, indonesiano, vietnamita e thailandese
+– e segue la lingua di Windows (o quella che scegli nelle Impostazioni). Nelle altre lingue appare in inglese.
 
 Il codice sorgente di questo repository è distribuito con licenza MIT. Alcune parti dell’app distribuita non fanno
 parte di questo codice: il nome, l’icona e i link. L’icona in alto è mostrata solo a titolo illustrativo: non è
@@ -45,7 +45,7 @@ e non è inclusa nelle build ottenute da questo repository.
 
 ## macOS, Windows, Linux e il web
 
-MINIKeyboard esiste in quattro edizioni costruite sulle stesse regole – gli stessi comandi, le stesse 14 lingue. Le tre app gestiscono le stesse tastiere, e l’edizione web, che funziona nel browser, tutte tranne la `1189:8890`.
+MINIKeyboard esiste in quattro edizioni costruite sulle stesse regole – gli stessi comandi, le stesse 16 lingue. Le tre app gestiscono le stesse tastiere, e l’edizione web, che funziona nel browser, tutte tranne la `1189:8890`.
 
 | Repository | GitHub |
 |---|---|
@@ -128,7 +128,7 @@ ogni risposta.
 5. **Salva** (Ctrl+S) scrive ciò che è cambiato. **Leggi** (Ctrl+R) recupera le impostazioni attuali da una tastiera
    che consente di rileggerle.
 
-In ⋯ ▸ **Impostazioni** (Ctrl+,) scegli la lingua dell’interfaccia (una delle 14, oppure quella di Windows) e
+In ⋯ ▸ **Impostazioni** (Ctrl+,) scegli la lingua dell’interfaccia (una delle 16, oppure quella di Windows) e
 l’aspetto chiaro o scuro. Nell’app scaricata dalla pagina Releases lì trovi anche
 **App ▸ Cerca aggiornamenti automaticamente**. In **Informazioni**, in fondo, trovi la versione, i link e **Software incluso**, cioè le licenze del software
 fornito con l’app.

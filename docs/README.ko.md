@@ -9,7 +9,7 @@
   <a href="../LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"></a>
 </p>
 
-<p align="center"><a href="../README.md">English</a> · <b>한국어</b> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
+<p align="center"><a href="../README.md">English</a> · <b>한국어</b> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.ru.md">Русский</a> · <a href="README.th.md">ไทย</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
 
 작은 USB 매크로 키보드에 키 설정을 쓰는 Windows 앱입니다. 노브 하나뿐인 것부터 키 21개까지, 노브는 4개까지로 팔리는
 키보드들입니다. 키와 노브의 동작(왼쪽으로 회전 · 누르기 · 오른쪽으로 회전)마다 레이어 1–3 에 키 입력 · 멀티미디어 키 ·
@@ -30,9 +30,9 @@
 고른 것을 씁니다. `1189:8890` 은 제조사 앱이 모르는 키보드이고 그 자신의 도구도 모양을 그리지 않아 실제 모양을 알 수
 없습니다. 그래서 키와 노브가 몇 개인지, 한 줄에 키가 몇 개인지를 정하면 앱이 그대로 반듯하게 그립니다.
 
-앱은 14개 언어로 나옵니다 — 영어 · 한국어 · 일본어 · 중국어(간체 · 번체) · 독일어 · 스페인어 · 프랑스어 · 이탈리아어 ·
-포르투갈어(브라질 · 포르투갈) · 폴란드어 · 인도네시아어 · 베트남어. Windows 의 언어를 따르고(설정에서 직접 고를 수도 있습니다), 그 밖의
-언어에서는 영어로 나옵니다.
+앱은 16개 언어로 나옵니다 — 영어 · 한국어 · 일본어 · 중국어(간체 · 번체) · 독일어 · 스페인어 · 프랑스어 · 이탈리아어 ·
+포르투갈어(브라질 · 포르투갈) · 폴란드어 · 러시아어 · 인도네시아어 · 베트남어 · 태국어. Windows 의 언어를
+따르고(설정에서 직접 고를 수도 있습니다), 그 밖의 언어에서는 영어로 나옵니다.
 
 이 저장소의 소스는 MIT 라이선스입니다. 배포되는 앱의 몇 가지 — 이름 · 아이콘 · 링크 — 는 이 소스에 없습니다. 맨 위의
 아이콘은 보여 주려고 둔 것으로 MIT 가 아니라 CC BY-SA 4.0 이고([`LICENSES/CC-BY-SA-4.0.txt`](../LICENSES/CC-BY-SA-4.0.txt)), 이
@@ -40,7 +40,7 @@
 
 ## macOS · Windows · 리눅스 · 웹
 
-MINIKeyboard 는 같은 규칙으로 만든 네 판이 있습니다 — 같은 명령, 같은 14개 언어. 세 앱은 같은 키보드를 다루고, 브라우저에서 도는 웹판은 그 가운데 `1189:8890` 을 뺀 키보드를 다룹니다.
+MINIKeyboard 는 같은 규칙으로 만든 네 판이 있습니다 — 같은 명령, 같은 16개 언어. 세 앱은 같은 키보드를 다루고, 브라우저에서 도는 웹판은 그 가운데 `1189:8890` 을 뺀 키보드를 다룹니다.
 
 | 저장소 | GitHub |
 |---|---|
@@ -111,7 +111,7 @@ dotnet test --project tests/MINIKeyboard.Domain.Tests                # Data.Test
    - **지연** — 지연을 기억하는 펌웨어에서.
 5. **저장**(Ctrl+S)이 바뀐 것을 씁니다. **읽기**(Ctrl+R)는 읽어 올 수 있는 키보드에서 지금 설정을 가져옵니다.
 
-⋯ ▸ **설정**(Ctrl+,)에서 화면 언어(14개 가운데 하나, 또는 Windows 의 언어)와 화면 모드(라이트 · 다크)를 고릅니다. 직접 받은
+⋯ ▸ **설정**(Ctrl+,)에서 화면 언어(16개 가운데 하나, 또는 Windows 의 언어)와 화면 모드(라이트 · 다크)를 고릅니다. 직접 받은
 앱에는 **앱 ▸ 업데이트 자동 확인** 도 있습니다. 맨 아래의 **정보** 에 버전 · 링크와 **함께 들어 있는 소프트웨어**(앱에 함께 들어
 있는 소프트웨어의 라이선스)가 있습니다.
 

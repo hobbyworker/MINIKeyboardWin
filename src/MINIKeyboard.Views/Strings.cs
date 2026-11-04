@@ -14,7 +14,7 @@ public static class Strings
 {
     /// <summary>The languages there is a table for; English is the source and needs none.</summary>
     private static readonly string[] Translated =
-        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "id", "vi"];
+        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "ru", "id", "vi", "th"];
 
     private static IReadOnlyDictionary<string, string> table = new Dictionary<string, string>();
 
@@ -40,8 +40,10 @@ public static class Strings
         "de" => "de-DE",
         "it" => "it-IT",
         "pl" => "pl-PL",
+        "ru" => "ru-RU",
         "id" => "id-ID",
         "vi" => "vi-VN",
+        "th" => "th-TH",
         var language => language, // pt-BR, pt-PT
     };
 
