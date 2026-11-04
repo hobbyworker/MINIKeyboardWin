@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml;
 using MINIKeyboard.Data;
 using MINIKeyboard.Domain;
@@ -34,7 +35,11 @@ public partial class App : Application
         // The language is read once, at launch; the environment's wins, for trying a language.
         var language = Environment.GetEnvironmentVariable("MINIKEYBOARD_LANGUAGE");
         Strings.Initialize(string.IsNullOrEmpty(language) ? settings.Choices.Language : language);
-        // A language chosen in the app also goes to the words Windows draws itself (a switch's On and Off …).
+        // The words the Windows App SDK draws itself (a switch's On and Off …) come from its own file for each language,
+        // which Windows picks by the process's preferred UI languages — not by the override below. So the process takes
+        // the interface's language, chosen or the system's, and those words never read in another one.
+        SetProcessPreferredUILanguages(MuiLanguageName, Strings.WindowsLanguage + "\0", out _);
+        // A language chosen in the app also goes to the resources looked up through the app's PRI.
         if (Strings.Language is not null)
             Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = Strings.Current;
 
@@ -164,4 +169,12 @@ public partial class App : Application
         var device = new KeyboardDevice(source, log) { PreventsLightingKeyRepeat = preventsLightingKeyRepeat };
         return (source, device, new KeyboardSourceUseCase(source), source);
     }
+
+    /// <summary>Languages given by name ("pt-PT"), not by number.</summary>
+    private const uint MuiLanguageName = 0x8;
+
+    /// <summary><paramref name="languages"/> ends with an empty one: each name followed by a NUL, then one more.</summary>
+    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetProcessPreferredUILanguages(uint flags, string languages, out uint count);
 }

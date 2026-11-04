@@ -24,6 +24,27 @@ public static class Strings
     /// <summary>What the interface reads in: "en", or one of the translated languages.</summary>
     public static string Current { get; private set; } = "en";
 
+    /// <summary>
+    /// <see cref="Current"/> as Windows names its languages, for the words the Windows App SDK draws itself — a
+    /// switch's On and Off come from its own file for each language (ko-KR\Microsoft.ui.xaml.dll.mui …).
+    /// </summary>
+    public static string WindowsLanguage => Current switch
+    {
+        "en" => "en-US",
+        "ko" => "ko-KR",
+        "ja" => "ja-JP",
+        "zh-Hans" => "zh-CN",
+        "zh-Hant" => "zh-TW",
+        "es" => "es-ES",
+        "fr" => "fr-FR",
+        "de" => "de-DE",
+        "it" => "it-IT",
+        "pl" => "pl-PL",
+        "id" => "id-ID",
+        "vi" => "vi-VN",
+        var language => language, // pt-BR, pt-PT
+    };
+
     /// <summary>Called once at launch, before the first word is looked up.</summary>
     public static void Initialize(string? language)
     {
