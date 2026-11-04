@@ -14,7 +14,7 @@ public static class Strings
 {
     /// <summary>The languages there is a table for; English is the source and needs none.</summary>
     private static readonly string[] Translated =
-        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "pt-BR", "fr", "de", "it", "pl", "id", "vi"];
+        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "id", "vi"];
 
     private static IReadOnlyDictionary<string, string> table = new Dictionary<string, string>();
 
@@ -41,8 +41,9 @@ public static class Strings
     private static string Translate(string message) => table.TryGetValue(message, out var text) ? text : message;
 
     /// <summary>
-    /// The table for a language tag as Windows or the user gives it ("ko-KR", "zh-TW", "pt-PT", "zh-Hans") — Chinese by
-    /// its script or region, Portuguese as Brazil's, any other by its language; "en" when there is none.
+    /// The table for a language tag as Windows or the user gives it ("ko-KR", "zh-TW", "pt-AO", "zh-Hans") — Chinese by
+    /// its script or region, Portuguese as Brazil's in Brazil and Portugal's anywhere else, any other by its language;
+    /// "en" when there is none.
     /// </summary>
     private static string Match(string tag)
     {
@@ -55,7 +56,7 @@ public static class Strings
             return traditional ? "zh-Hant" : "zh-Hans";
         }
         if (language == "pt")
-            return "pt-BR";
+            return parts.Skip(1).Any(part => part.Equals("BR", StringComparison.OrdinalIgnoreCase)) ? "pt-BR" : "pt-PT";
         return Translated.Contains(language) ? language : "en";
     }
 

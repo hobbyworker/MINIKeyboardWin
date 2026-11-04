@@ -9,7 +9,7 @@
   <a href="../LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"></a>
 </p>
 
-<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <b>Français</b> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
+<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <b>Français</b> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
 
 Une app Windows qui écrit les réglages des touches sur de petits claviers macro USB – ceux que l’on trouve dans le
 commerce, d’un seul bouton rotatif jusqu’à 21 touches, avec au plus quatre boutons rotatifs. Pour chaque action d’une
@@ -35,8 +35,8 @@ qui ne l’indique pas reçoit celle de ces dispositions que vous choisissez. L�
 l’app combien de touches et de boutons rotatifs il possède et combien de touches compte une rangée, et elle en dessine
 une disposition bien ordonnée.
 
-L’app est disponible en 13 langues – anglais, coréen, japonais, chinois (simplifié et traditionnel), allemand,
-espagnol, français, italien, portugais (Brésil), polonais, indonésien et vietnamien – et suit la langue de Windows (ou
+L’app est disponible en 14 langues – anglais, coréen, japonais, chinois (simplifié et traditionnel), allemand,
+espagnol, français, italien, portugais (Brésil et Portugal), polonais, indonésien et vietnamien – et suit la langue de Windows (ou
 celle que vous choisissez dans les Réglages). Dans les autres langues, elle s’affiche en anglais.
 
 Le code source de ce dépôt est sous licence MIT. Certaines parties de l’app distribuée ne font pas partie de ce code
@@ -47,7 +47,7 @@ dépôt.
 
 ## macOS, Windows, Linux et le web
 
-MINIKeyboard existe en quatre éditions construites sur les mêmes règles – les mêmes commandes, les mêmes 13 langues. Les trois apps prennent les mêmes claviers, et l’édition web, qui fonctionne dans le navigateur, tous sauf le `1189:8890`.
+MINIKeyboard existe en quatre éditions construites sur les mêmes règles – les mêmes commandes, les mêmes 14 langues. Les trois apps prennent les mêmes claviers, et l’édition web, qui fonctionne dans le navigateur, tous sauf le `1189:8890`.
 
 | Dépôt | GitHub |
 |---|---|
@@ -135,7 +135,7 @@ rapport écrit et chaque réponse.
 5. **Enregistrer** (Ctrl+S) écrit ce qui a changé. **Lire** (Ctrl+R) récupère les réglages actuels d’un clavier qui
    permet de les relire.
 
-Dans ⋯ ▸ **Réglages** (Ctrl+,), vous choisissez la langue de l’interface (l’une des 13, ou celle de Windows) et
+Dans ⋯ ▸ **Réglages** (Ctrl+,), vous choisissez la langue de l’interface (l’une des 14, ou celle de Windows) et
 l’apparence claire ou sombre. L’app issue de la page Releases y propose aussi
 **App ▸ Rechercher les mises à jour automatiquement**. **À propos**, en bas, affiche la version, les liens et **Logiciels inclus** – les licences des logiciels fournis avec
 l’app.
