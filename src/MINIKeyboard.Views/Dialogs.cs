@@ -25,7 +25,8 @@ internal sealed class DialogHost
     public ContentDialog? Current { get; private set; }
 
     /// <summary>A dialog with the app's look.</summary>
-    public static ContentDialog Create() => new() { Style = Styles.Get("DefaultContentDialogStyle") };
+    public static ContentDialog Create() =>
+        new() { Style = Styles.Get("DefaultContentDialogStyle"), FlowDirection = Strings.Flow };
 
     /// <summary>
     /// Shows <paramref name="dialog"/> once the one before has closed, unless by then <paramref name="stillWanted"/>

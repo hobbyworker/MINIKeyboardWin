@@ -73,6 +73,7 @@ public sealed class InterfaceSettings
         ("id", "Bahasa Indonesia"),
         ("vi", "Tiếng Việt"),
         ("th", "ไทย"),
+        ("ar", "العربية"),
     ];
 
     /// <summary>A file that can't be read gives the defaults.</summary>

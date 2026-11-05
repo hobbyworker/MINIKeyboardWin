@@ -126,7 +126,7 @@ internal sealed class KeysPage
     private readonly TextBlock note = Ui.Caption("");
     private readonly Border shown = new();
     private readonly StackPanel qwerty = new() { Spacing = 16 };
-    private readonly BoardPanel board = new() { RowWidth = BoardCap.RowWidth };
+    private readonly BoardPanel board = new() { RowWidth = BoardCap.RowWidth, FlowDirection = FlowDirection.LeftToRight };
     private readonly StackPanel more = new();
     private readonly StackPanel grouped = new() { Spacing = 16 };
     private readonly List<(ModifierKey Modifier, Button Button)> modifiers = [];
@@ -282,7 +282,7 @@ internal sealed class KeysPage
         more.Children.Clear();
         if (extra.Count > 0)
         {
-            var wrap = new WrapPanel();
+            var wrap = Ui.KeysLeftToRight(new WrapPanel());
             foreach (var key in extra)
                 wrap.Children.Add(PressButton(key, compact: false));
             more.Children.Add(Ui.Section(T("More Keys"), null, wrap));
@@ -294,7 +294,7 @@ internal sealed class KeysPage
     {
         grouped.Children.Clear();
         modifiers.Clear();
-        var row = new WrapPanel { HorizontalSpacing = 6, VerticalSpacing = 6 };
+        var row = Ui.KeysLeftToRight(new WrapPanel { HorizontalSpacing = 6, VerticalSpacing = 6 });
         foreach (var modifier in ModifierKeys.All)
         {
             var button = ModifierButton(modifier, compact: false);
@@ -305,12 +305,12 @@ internal sealed class KeysPage
         grouped.Children.Add(Ui.Section(T("Modifiers"), null, row));
         foreach (var group in groups)
         {
-            var wrap = new WrapPanel();
+            var wrap = Ui.KeysLeftToRight(new WrapPanel());
             foreach (var key in group.Keys)
                 wrap.Children.Add(PressButton(key, compact: false));
             grouped.Children.Add(Ui.Section(Names.KeyGroupTitle(group.Kind), null, wrap));
         }
-        var symbols = new WrapPanel();
+        var symbols = Ui.KeysLeftToRight(new WrapPanel());
         foreach (var key in shiftSymbols)
         {
             if (key.Shifted is not { } shifted)

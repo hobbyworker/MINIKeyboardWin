@@ -73,7 +73,7 @@ internal sealed class KeyboardCanvas
 
     public KeyboardCanvas()
     {
-        Root = new Grid { Background = new SolidColorBrush(Colors.Transparent) };
+        Root = new Grid { Background = new SolidColorBrush(Colors.Transparent), FlowDirection = FlowDirection.LeftToRight };
         Root.Children.Add(canvas);
         canvas.Children.Add(body);
         canvas.Children.Add(simulatorBadge);
@@ -374,7 +374,7 @@ internal sealed class ShapeThumbnail
     public ShapeThumbnail(double margin)
     {
         this.margin = margin;
-        Root = new Grid { Background = new SolidColorBrush(Colors.Transparent) };
+        Root = new Grid { Background = new SolidColorBrush(Colors.Transparent), FlowDirection = FlowDirection.LeftToRight };
         Root.Children.Add(canvas);
         Root.SizeChanged += (_, _) => Draw();
     }

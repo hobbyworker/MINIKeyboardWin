@@ -58,6 +58,9 @@ public sealed partial class DeviceLogWindow : Window
         for (var column = 0; column < 3; column++)
             bar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         count.VerticalAlignment = VerticalAlignment.Center;
+        // The log is left to right; its words are sentences, written their language's way.
+        count.FlowDirection = Strings.Flow;
+        count.HorizontalAlignment = HorizontalAlignment.Left;
         bar.Children.Add(count);
         foreach (var (button, column) in new[] { (expandAll, 1), (copy, 2), (clear, 3) })
         {
@@ -66,7 +69,9 @@ public sealed partial class DeviceLogWindow : Window
         }
 
         empty.Children.Add(Ui.Icon(Glyphs.Log, 32, "FaintIconStyle"));
-        empty.Children.Add(Ui.Text(T("No packets yet."), "DimTextStyle"));
+        var none = Ui.Text(T("No packets yet."), "DimTextStyle");
+        none.FlowDirection = Strings.Flow;
+        empty.Children.Add(none);
         scroller.Content = list;
         var body = new Grid();
         body.Children.Add(scroller);
@@ -198,12 +203,14 @@ public sealed partial class DeviceLogWindow : Window
         header.Children.Add(icon);
         var text = line.Event is { } logEvent ? Names.LogEventMessage(logEvent) : line.Summary();
         var body = Ui.Text(text, "LogTextStyle");
+        if (line.Event is not null)
+            body.FlowDirection = Strings.Flow;
         body.IsTextSelectionEnabled = true;
         body.VerticalAlignment = VerticalAlignment.Center;
         header.Children.Add(body);
         if (line.IsShortened)
         {
-            var more = Ui.Text($"… {T("%lld bytes", line.Bytes.Count)}", "LogDimTextStyle");
+            var more = Ui.Text($"… {Strings.Isolate(T("%lld bytes", line.Bytes.Count))}", "LogDimTextStyle");
             more.VerticalAlignment = VerticalAlignment.Center;
             header.Children.Add(more);
         }

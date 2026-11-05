@@ -134,7 +134,8 @@ internal sealed class Inspector
 
     private void Presses(BindingState.Presses presses)
     {
-        var chips = new WrapPanel { HorizontalSpacing = 6, VerticalSpacing = 6 };
+        // In the order they're typed, as on the key cap.
+        var chips = Ui.KeysLeftToRight(new WrapPanel { HorizontalSpacing = 6, VerticalSpacing = 6 });
         foreach (var stroke in presses.Strokes)
         {
             var text = Ui.Text(stroke, "BodyStrongTextBlockStyle");

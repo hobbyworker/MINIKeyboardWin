@@ -49,7 +49,8 @@ internal sealed class Header
         this.editor = editor;
         title.TextTrimming = TextTrimming.CharacterEllipsis;
         detail.TextTrimming = TextTrimming.CharacterEllipsis;
-        var texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+        // The title bar stays left to right; the state is words, written their language's way.
+        var texts = new StackPanel { VerticalAlignment = VerticalAlignment.Center, FlowDirection = Strings.Flow };
         texts.Children.Add(title);
         texts.Children.Add(detail);
 
@@ -60,7 +61,7 @@ internal sealed class Header
             VerticalAlignment = VerticalAlignment.Center,
         };
         Ui.Tooltip(Keyboards, T("Choose a Keyboard"));
-        var choices = new MenuFlyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedLeft };
+        var choices = Ui.Menu(FlyoutPlacementMode.BottomEdgeAlignedLeft);
         choices.Opening += (_, _) =>
         {
             choices.Items.Clear();
@@ -94,7 +95,7 @@ internal sealed class Header
             },
         };
         popup.Opening += (_, _) =>
-            popup.Content = editor.KeyboardInfo is { } info ? KeyboardInfoView.Create(info) : null;
+            popup.Content = editor.KeyboardInfo is { } info ? Flowing(KeyboardInfoView.Create(info)) : null;
         Info.Flyout = popup;
 
         identify.Click += async (_, _) => await editor.IdentifyAsync();
@@ -119,7 +120,7 @@ internal sealed class Header
             VerticalAlignment = VerticalAlignment.Center,
         };
         Ui.Tooltip(Save, T("Save to Keyboard"));
-        Menu = new MenuFlyout { Placement = FlyoutPlacementMode.BottomEdgeAlignedRight };
+        Menu = Ui.Menu(FlyoutPlacementMode.BottomEdgeAlignedRight);
         More = new Button
         {
             Content = Ui.Icon(Glyphs.More, 16),
@@ -341,6 +342,14 @@ internal sealed class Header
 
     private static void Show(UIElement element, bool visible) =>
         element.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+    /// <summary><paramref name="content"/> in the text's direction — a flyout's content doesn't take it from the window.</summary>
+    private static UIElement Flowing(UIElement content)
+    {
+        if (content is FrameworkElement element)
+            element.FlowDirection = Strings.Flow;
+        return content;
+    }
 }
 
 /// <summary>
@@ -410,7 +419,7 @@ internal static class KeyboardInfoView
             foreach (var face in info.Interfaces)
             {
                 var roles = string.Join(", ", face.Roles.Select(Names.InterfaceRoleTitle));
-                column.Children.Add(Value($"{face.Number}  {roles}{(face.IsConfiguration ? "  ←" : "")}"));
+                column.Children.Add(Value($"{face.Number}  {roles}{(face.IsConfiguration ? (Strings.Flow == FlowDirection.RightToLeft ? "  →" : "  ←") : "")}"));
             }
             Add(T("Interfaces"), column);
         }

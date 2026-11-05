@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using MINIKeyboard.Presentation;
 
 namespace MINIKeyboard.Views;
@@ -8,11 +9,16 @@ namespace MINIKeyboard.Views;
 /// <summary>Small pieces the windows are built from.</summary>
 internal static class Ui
 {
+    /// <remarks>
+    /// The text reads the way its place does (<see cref="FrameworkElement.FlowDirection"/>), not the way its first letter
+    /// does — XAML's default, which reads «884x · …» in Arabic left to right.
+    /// </remarks>
     public static TextBlock Text(string text, string style = "BodyTextBlockStyle", bool wrap = false) => new()
     {
         Text = text,
         Style = Styles.Get(style),
         TextWrapping = wrap ? TextWrapping.WrapWholeWords : TextWrapping.NoWrap,
+        TextReadingOrder = TextReadingOrder.UseFlowDirection,
     };
 
     /// <summary>Small, dimmed text that wraps.</summary>
@@ -20,7 +26,12 @@ internal static class Ui
 
     public static FontIcon Icon(string glyph, double size = 16, string? style = null)
     {
-        var icon = new FontIcon { Glyph = glyph, FontSize = size };
+        var icon = new FontIcon
+        {
+            Glyph = glyph,
+            FontSize = size,
+            MirroredWhenRightToLeft = glyph is Glyphs.Back or Glyphs.Forward or Glyphs.Undo or Glyphs.ChevronRight,
+        };
         if (style is not null)
             icon.Style = Styles.Get(style);
         return icon;
@@ -44,6 +55,32 @@ internal static class Ui
             section.Children.Add(Caption(note));
         return section;
     }
+
+    /// <summary>
+    /// Keys laid out as on keyboards — left to right in every language, at the start of the line; the titles above them
+    /// read the interface's way.
+    /// </summary>
+    public static T KeysLeftToRight<T>(T panel)
+        where T : FrameworkElement
+    {
+        panel.FlowDirection = FlowDirection.LeftToRight;
+        panel.HorizontalAlignment = HorizontalAlignment.Left;
+        return panel;
+    }
+
+    /// <summary>
+    /// A menu in the text's direction. The title bar stays left to right (its caption buttons are on the right in every
+    /// language), and a menu opened from it would take that.
+    /// </summary>
+    public static MenuFlyout Menu(FlyoutPlacementMode placement) => new()
+    {
+        Placement = placement,
+        MenuFlyoutPresenterStyle = new Style(typeof(MenuFlyoutPresenter))
+        {
+            BasedOn = Styles.Get("DefaultMenuFlyoutPresenterStyle"),
+            Setters = { new Setter(FrameworkElement.FlowDirectionProperty, Strings.Flow) },
+        },
+    };
 
     /// <summary>A key cap in the action pages.</summary>
     public static Button Keycap(string label)

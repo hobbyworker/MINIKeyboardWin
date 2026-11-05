@@ -154,6 +154,8 @@ public sealed partial class MainWindow : Window
             root.Children.Add(updateBar.Root);
         }
         root.RequestedTheme = Theme;
+        root.FlowDirection = Strings.Flow;
+        Header.Bar.FlowDirection = FlowDirection.LeftToRight;
         root.KeyboardAcceleratorPlacementMode = KeyboardAcceleratorPlacementMode.Hidden;
         Content = root;
 
@@ -266,7 +268,7 @@ public sealed partial class MainWindow : Window
     {
         var item = new MenuFlyoutItem { Text = text, Icon = new FontIcon { Glyph = glyph } };
         if (shortcut is not null)
-            item.KeyboardAcceleratorTextOverride = shortcut;
+            item.KeyboardAcceleratorTextOverride = Strings.LeftToRight(shortcut);
         item.Click += (_, _) => Run(command);
         menuItems.Add((command, item));
         return item;

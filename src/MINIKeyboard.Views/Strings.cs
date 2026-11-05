@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
+using Microsoft.UI.Xaml;
 
 namespace MINIKeyboard.Views;
 
@@ -14,7 +15,7 @@ public static class Strings
 {
     /// <summary>The languages there is a table for; English is the source and needs none.</summary>
     private static readonly string[] Translated =
-        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "es-419", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "ru", "id", "vi", "th"];
+        ["ko", "ja", "zh-Hans", "zh-Hant", "es", "es-419", "pt-BR", "pt-PT", "fr", "de", "it", "pl", "ru", "id", "vi", "th", "ar"];
 
     /// <summary>The regions whose Spanish is Latin America's: Latin America itself (419), its countries and the US.</summary>
     private static readonly HashSet<string> LatinAmericanSpanish =
@@ -52,8 +53,15 @@ public static class Strings
         "id" => "id-ID",
         "vi" => "vi-VN",
         "th" => "th-TH",
+        "ar" => "ar-SA",
         var language => language, // pt-BR, pt-PT
     };
+
+    /// <summary>
+    /// Which way <see cref="Current"/> is written — Arabic right to left, every other language left to right. WinUI doesn't
+    /// take it from the language; the windows set it on their content.
+    /// </summary>
+    public static FlowDirection Flow => Current is "ar" ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 
     /// <summary>Called once at launch, before the first word is looked up.</summary>
     public static void Initialize(string? language)
@@ -66,8 +74,48 @@ public static class Strings
     /// <summary>A message in the user's language.</summary>
     public static string T(string message) => Translate(message);
 
-    /// <summary>A message in the user's language, with its values put in.</summary>
-    public static string T(string message, params object[] values) => Fill(Translate(message), values);
+    /// <summary>
+    /// A message in the user's language, with its values put in — in a right-to-left language each set apart from the
+    /// words around it, so "8890-3" doesn't read "3-8890".
+    /// </summary>
+    public static string T(string message, params object[] values) =>
+        Fill(Translate(message), Flow == FlowDirection.RightToLeft ? [.. values.Select(Isolate)] : values);
+
+    /// <summary>
+    /// <paramref name="value"/> set apart from the words around it in a right-to-left language: its own direction inside,
+    /// in its place outside. Unchanged in the other languages.
+    /// </summary>
+    /// <remarks>
+    /// An embedding (LRE or RLE … PDF) in the direction of its first letter, as a first-strong isolate would be — XAML's
+    /// text doesn't keep the isolates of Unicode 6.3 (FSI … PDI): a "8890-3" in them still read "3-8890".
+    /// </remarks>
+    public static string Isolate(object value)
+    {
+        var text = Convert.ToString(value, CultureInfo.InvariantCulture) ?? "";
+        if (Flow != FlowDirection.RightToLeft)
+            return text;
+        return $"{(StartsRightToLeft(text) ? '\u202B' : '\u202A')}{text}\u202C";
+    }
+
+    /// <summary>
+    /// Key names and presses as the keys print them, left to right — in Arabic a lone "(" would turn round and "Shift+("
+    /// read "(+Shift". Unchanged in the other languages. An embedding (LRE … PDF), for the reason <see cref="Isolate"/> gives.
+    /// </summary>
+    public static string LeftToRight(string text) =>
+        Flow == FlowDirection.RightToLeft ? $"\u202A{text}\u202C" : text;
+
+    /// <summary>Whether the first letter of <paramref name="text"/> is written right to left — Hebrew or Arabic.</summary>
+    private static bool StartsRightToLeft(string text)
+    {
+        foreach (var c in text)
+        {
+            if (c is >= '\u0590' and <= '\u08FF' or >= '\uFB1D' and <= '\uFDFF' or >= '\uFE70' and <= '\uFEFF')
+                return true;
+            if (char.IsLetter(c))
+                return false;
+        }
+        return false;
+    }
 
     private static string Translate(string message) => table.TryGetValue(message, out var text) ? text : message;
 

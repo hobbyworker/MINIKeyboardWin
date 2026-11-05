@@ -9,7 +9,7 @@
   <a href="../LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-yellow"></a>
 </p>
 
-<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.de.md">Deutsch</a> · <b>Español</b> · <a href="README.es-419.md">Español (Latinoamérica)</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.ru.md">Русский</a> · <a href="README.th.md">ไทย</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
+<p align="center"><a href="../README.md">English</a> · <a href="README.ko.md">한국어</a> · <a href="README.ar.md">العربية</a> · <a href="README.de.md">Deutsch</a> · <b>Español</b> · <a href="README.es-419.md">Español (Latinoamérica)</a> · <a href="README.fr.md">Français</a> · <a href="README.id.md">Bahasa Indonesia</a> · <a href="README.it.md">Italiano</a> · <a href="README.ja.md">日本語</a> · <a href="README.pl.md">Polski</a> · <a href="README.pt-BR.md">Português (Brasil)</a> · <a href="README.pt-PT.md">Português (Portugal)</a> · <a href="README.ru.md">Русский</a> · <a href="README.th.md">ไทย</a> · <a href="README.vi.md">Tiếng Việt</a> · <a href="README.zh-Hans.md">简体中文</a> · <a href="README.zh-Hant.md">繁體中文</a></p>
 
 Una app para Windows que escribe la configuración de las teclas en pequeños teclados de macros USB. Se venden en
 muchos tamaños: desde los que solo tienen un botón giratorio hasta los de 21 teclas, con hasta cuatro botones
@@ -36,9 +36,9 @@ el `1189:8890` y su propia herramienta no dibuja ninguna forma, así que no se s
 tú indicas cuántas teclas y botones giratorios tiene y cuántas teclas hay en cada fila, y la app los dibuja tal
 cual, bien ordenados.
 
-La app está disponible en 17 idiomas: inglés, coreano, japonés, chino (simplificado y tradicional), alemán, español
-(España y Latinoamérica), francés, italiano, portugués (Brasil y Portugal), polaco, ruso, indonesio, vietnamita y
-tailandés. Sigue el idioma de Windows (o el que elijas en Ajustes); en cualquier otro idioma, aparece en inglés.
+La app está disponible en 18 idiomas: inglés, coreano, japonés, chino (simplificado y tradicional), alemán, español
+(España y Latinoamérica), francés, italiano, portugués (Brasil y Portugal), polaco, ruso, indonesio, vietnamita,
+tailandés y árabe. Sigue el idioma de Windows (o el que elijas en Ajustes); en cualquier otro idioma, aparece en inglés.
 
 El código fuente de este repositorio tiene licencia MIT. Algunas partes de la app que se distribuye —su nombre, su
 icono y sus enlaces— no están incluidas en este código. El icono de arriba se muestra solo como referencia: no está
@@ -47,7 +47,7 @@ las compilaciones de este repositorio no lo incluyen.
 
 ## macOS, Windows, Linux y la web
 
-MINIKeyboard tiene cuatro ediciones hechas con las mismas reglas: los mismos comandos y los mismos 17 idiomas. Las tres apps admiten los mismos teclados, y la edición web, que funciona en el navegador, todos menos el `1189:8890`.
+MINIKeyboard tiene cuatro ediciones hechas con las mismas reglas: los mismos comandos y los mismos 18 idiomas. Las tres apps admiten los mismos teclados, y la edición web, que funciona en el navegador, todos menos el `1189:8890`.
 
 | Repositorio | GitHub |
 |---|---|
@@ -128,7 +128,7 @@ ese teclado. ⋯ ▸ **Registro del dispositivo** (Ctrl+Alt+L) muestra todos los
 5. **Guardar** (Ctrl+S) escribe lo que ha cambiado. **Leer** (Ctrl+R) trae la configuración actual de los teclados
    que permiten leerla.
 
-En ⋯ ▸ **Ajustes** (Ctrl+,) eliges el idioma de la interfaz (uno de los 17 o el de Windows) y el modo claro u
+En ⋯ ▸ **Ajustes** (Ctrl+,) eliges el idioma de la interfaz (uno de los 18 o el de Windows) y el modo claro u
 oscuro. La app de la página Releases también tiene ahí **App ▸ Buscar actualizaciones automáticamente**. En
 **Acerca de**, al final, ves la versión, los enlaces y **Software incluido**: las licencias del software que trae la app.
 

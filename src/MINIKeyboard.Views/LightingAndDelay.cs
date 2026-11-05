@@ -236,7 +236,7 @@ internal sealed class DelayView(EditorModel editor)
                     {
                         grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                         var name = Ui.Text(T("Press %lld", press.Index + 1), "DimTextStyle");
-                        var text = Ui.Text(press.Text, "BodyStrongTextBlockStyle");
+                        var text = Ui.Text(Strings.LeftToRight(press.Text), "BodyStrongTextBlockStyle");
                         var index = press.Index;
                         var (field, controls) = Milliseconds(perPress.Range, value => editor.SetDelay(index, value));
                         built.Add(field);
