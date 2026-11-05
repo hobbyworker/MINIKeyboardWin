@@ -28,5 +28,8 @@
     <BrandStoreName></BrandStoreName>
     <BrandStorePublisher></BrandStorePublisher>
     <BrandStorePublisherName></BrandStorePublisherName>
+    <!-- Only for a Store build: a folder of the package's pictures, named as Store/Package.appxmanifest.xml calls them
+         with their scale (StoreLogo.scale-100.png …) or size (Square44x44Logo.targetsize-24.png …). -->
+    <BrandStoreImages></BrandStoreImages>
   </PropertyGroup>
 </Project>

@@ -64,6 +64,34 @@
     <PackageReference Include="Velopack" />
     <AssemblyMetadata Include="UpdateUrl" Value="$(BrandUpdateUrl)" />
   </ItemGroup>
+  <!-- Store: an MSIX that the Store signs, installs and updates. Its manifest is Store/Package.appxmanifest.xml with the
+       brand's values put in (WriteStoreManifest), its pictures the brand's (BrandStoreImages). Like the other builds, it
+       carries the .NET runtime and the Windows App SDK in the package. -->
+  <PropertyGroup Condition="'$(Distribution)' == 'Store'">
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <SelfContained>true</SelfContained>
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxBundle>Never</AppxBundle>
+    <!-- No symbols package beside it (no symbols at all — Directory.Build.props). -->
+    <AppxSymbolPackageEnabled>false</AppxSymbolPackageEnabled>
+    <StoreManifest>$(IntermediateOutputPath)Package.appxmanifest</StoreManifest>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(Distribution)' == 'Store'">
+    <AppxManifest Include="$(StoreManifest)" />
+    <Content Include="$(BrandStoreImages)/*.png" Link="Images/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="WriteStoreManifest" BeforeTargets="BeforeBuild" Condition="'$(Distribution)' == 'Store'">
+    <PropertyGroup>
+      <_StoreManifestText>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)Store/Package.appxmanifest.xml'))</_StoreManifestText>
+      <_StoreManifestText>$(_StoreManifestText.Replace('{StoreName}', '$(BrandStoreName)').Replace('{StorePublisher}', '$(BrandStorePublisher)'))</_StoreManifestText>
+      <_StoreManifestText>$(_StoreManifestText.Replace('{StorePublisherName}', '$(BrandStorePublisherName)').Replace('{Name}', '$(BrandName)'))</_StoreManifestText>
+      <!-- The Store wants four numbers, the last 0. -->
+      <_StoreManifestText>$(_StoreManifestText.Replace('{Version}', '$(Version).0'))</_StoreManifestText>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(StoreManifest)" Lines="$([MSBuild]::Escape('$(_StoreManifestText)'))" Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
   <Target Name="RequireDistributionValues" BeforeTargets="BeforeBuild">
     <!-- An empty value given on the command line stays empty (it overrides the default above): that is Source too. -->
     <Error Condition="'$(Distribution)' != '' and '$(Distribution)' != 'Source' and '$(Distribution)' != 'Direct' and '$(Distribution)' != 'Store'"
@@ -72,6 +100,8 @@
            Text="A Direct build needs BrandUpdateUrl in Brand.props: where the app looks for new versions." />
     <Error Condition="'$(Distribution)' == 'Store' and ('$(BrandStoreName)' == '' or '$(BrandStorePublisher)' == '' or '$(BrandStorePublisherName)' == '')"
            Text="A Store build needs the package identity Partner Center gives the app: BrandStoreName, BrandStorePublisher and BrandStorePublisherName in Brand.props." />
+    <Error Condition="'$(Distribution)' == 'Store' and ('$(BrandStoreImages)' == '' or !Exists('$(BrandStoreImages)/StoreLogo.scale-100.png'))"
+           Text="A Store build needs the package's pictures: BrandStoreImages in Brand.props, a folder of StoreLogo, Square44x44Logo, Square150x150Logo, Wide310x150Logo and SplashScreen images." />
   </Target>
   <ItemGroup>
     <ProjectReference Include="../MINIKeyboard.Domain/MINIKeyboard.Domain.csproj" />
