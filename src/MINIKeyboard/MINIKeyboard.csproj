@@ -79,7 +79,9 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(Distribution)' == 'Store'">
     <AppxManifest Include="$(StoreManifest)" />
-    <Content Include="$(BrandStoreImages)/*.png" Link="Images/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <!-- A backslash in Link: the package index (resources.pri) keeps the path as written, and the Store looks it up in the
+         package as Windows names it (Images\StoreLogo.scale-100.png) — with a slash it reports the pictures missing. -->
+    <Content Include="$(BrandStoreImages)\*.png" Link="Images\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="WriteStoreManifest" BeforeTargets="BeforeBuild" Condition="'$(Distribution)' == 'Store'">
     <PropertyGroup>
