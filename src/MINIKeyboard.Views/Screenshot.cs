@@ -20,6 +20,7 @@ namespace MINIKeyboard.Views;
 /// The steps, separated by <c>;</c>, are what a user would do: <c>arrangement:6,3,1</c>, <c>layout:9add2</c>,
 /// <c>select:key:3</c>, <c>select:knob:1:press</c>, <c>modifier:super</c>, <c>press:0x06</c>, <c>tab:media</c>,
 /// <c>keys:qwerty</c>, <c>media:8</c>, <c>mouse:3</c>, <c>mode:2</c>, <c>color:255,0,0</c>, <c>layer:2</c>,
+/// <c>delay:2,150</c> (the second press waits 150 ms),
 /// <c>info</c>, and <c>action:&lt;name&gt;</c> for any of the window's commands (<c>device-log</c>,
 /// <c>preferences</c>, <c>about</c>, <c>shape</c> …); and, to look at what the other editions' steps don't show,
 /// <c>appearance:dark</c> (or <c>light</c>, <c>system</c>) and <c>menu</c>, the main menu.
@@ -136,6 +137,11 @@ public static partial class Screenshot
                 return true;
             case "color" when Numbers() is [var red, var green, var blue]:
                 editor.SetKeyColor(new Rgb(red, green, blue));
+                return true;
+            case "delay" when argument.Split(',') is [var number, var milliseconds]
+                && int.TryParse(number, CultureInfo.InvariantCulture, out var press) && press > 0
+                && uint.TryParse(milliseconds, CultureInfo.InvariantCulture, out var wait):
+                editor.SetDelay(press - 1, wait);
                 return true;
             case "layer" when Numbers() is [var layer] && layer > 0:
                 editor.SetLayer(layer - 1);
